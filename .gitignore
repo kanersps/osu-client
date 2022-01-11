@@ -24,4 +24,5 @@ yarn-error.log*
 
 # Ignore assets
 assets/hotel/**
+public/assets/hotel/**
 
