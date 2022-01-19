@@ -12,17 +12,6 @@ class RenderEngine {
     });
 
     this._app.start();
-
-    // Create test room
-    const room = new Room(`
-0000
-0##0
-0000
-`);
-
-    // Render room floor
-    AssetManager.loadFloor("assets/floor.png");
-    AssetManager.loadAllResources();
   }
 
   get view() {
@@ -31,6 +20,23 @@ class RenderEngine {
 
   quit(): void {
     this._app.stop();
+  }
+
+  async setRoom(room: Room) {        
+    // Add room to render engine
+    this._app.stage.addChild(room.container);
+
+    console.log(room.container);
+  }
+
+  async initialize() {    
+    // Render room floor
+    AssetManager.loadFloor("assets/floor.png");
+
+    console.log("Done initializing Osu!");
+
+    // Test room
+    this.setRoom(new Room(""));
   }
 }
 

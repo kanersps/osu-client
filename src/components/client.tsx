@@ -8,6 +8,8 @@ const Client = () => {
   useEffect(() => {
     const renderer = new RenderEngine();
 
+    renderer.initialize();
+
     // Add it to the DOM
     clientRef.current?.appendChild(renderer.view);
   }, [])
