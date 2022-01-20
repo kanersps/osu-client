@@ -2,12 +2,54 @@ import * as zip from "@zip.js/zip.js";
 import { XMLParser } from "fast-xml-parser";
 import Asset from "./Asset";
 import { Container, Texture, Sprite } from "pixi.js";
+import GameState from "../state/Game";
 
 class Furniture {
   assets: { [rotation: number]: Asset[] } = {};
   rotations: number[] = [];
 
   constructor(private entries: zip.Entry[]) {}
+
+  drawInWorld(container: Container, rotation: number, x: number, y: number, z: number) {
+    const TILE_WIDTH = 32;
+    const TILE_HEIGHT = 32;
+
+    // X and Y to isometric coords
+    const screenXCoord = (x - y) * TILE_WIDTH;
+    const screenYCoord = (x + y) * TILE_HEIGHT / 2;
+
+    if (this.assets[rotation]) {
+      this.assets[rotation].forEach(asset => {
+        const sprite = new Sprite(asset.texture);
+        sprite.anchor.set(0);
+        sprite.x = -asset.x + screenXCoord - 32;
+        sprite.y = -asset.y + screenYCoord;
+
+        if(asset.flipH) {
+          sprite.scale.x *= -1;
+          sprite.anchor.x = 1;
+          sprite.x = asset.x - asset.texture.width + screenXCoord - 32;
+        }
+
+        if(asset.flipV) {
+          sprite.scale.y *= -1;
+          sprite.anchor.y = 1;
+          sprite.y = asset.y - asset.texture.height + screenYCoord;
+        }
+
+        // Draw shadow properly
+        if(asset.name.includes("sd")) {
+          sprite.alpha = 0.2;
+        }
+
+        // Finally, add the camera fofset to the sprites
+        sprite.x += GameState.cameraOffsetX;
+        sprite.y += GameState.cameraOffsetY;
+
+        container.addChild(sprite);
+      });
+    }
+  }
 
   drawAt(container: Container, rotation: number, x: number, y: number) {
     if (this.assets[rotation]) {
