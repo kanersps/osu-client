@@ -67,15 +67,25 @@ class Room {
   }
 
   private getAllFurniAtXAndY(x: number, y: number): Furniture[] {
-    const furni: Furniture[] = [];
+    const furnis: Furniture[] = [];
 
-    for (const f of this.furniture) {
-      if (f.x === x && f.y === y) {
-        furni.push(f);
+    for (const furni of this.furniture) {
+      // Check if the furni is in range of the x and y (using the furni's asset dimension)
+      const dimensions = furni.getDimensions();
+
+      console.log(`ClickX: ${x}; ClickY: ${y}`)
+      console.log(`FurniX: ${furni.x}; FurniY: ${furni.y}; SizeX: ${dimensions.x}; SizeY: ${dimensions.y}`)
+
+      if(x >= furni.x 
+        && y >= furni.y
+        && x <= furni.x + (dimensions.x - 1)
+        && y <= furni.y + (dimensions.y - 1)) {
+          furnis.push(furni);
       }
+
     }
 
-    return furni;
+    return furnis;
   }
 
   private async clicked(event: MouseEvent) {
@@ -97,11 +107,16 @@ class Room {
     }
     
     const throne = await AssetManager.getFurni(GameState.PlacingFurniName);
-    
+
     if(throne instanceof FurnitureAsset) {
       if(highestZ) {
-        this.addFurni(throne, worldCoords.x, worldCoords.y, highestZ.z + 1, throne.rotations[0]);
-      } else {
+        if(highestZ.getDimensions().z === 0) {
+          console.log("This furni can not be placed on top of another furni");
+          return;
+        }
+        
+        this.addFurni(throne, worldCoords.x, worldCoords.y, parseInt(highestZ.z) + parseInt(highestZ.getDimensions().z), throne.rotations[0]);
+      } else { 
         this.addFurni(throne, worldCoords.x, worldCoords.y, 0, throne.rotations[0]);
       }
     }

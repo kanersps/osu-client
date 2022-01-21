@@ -83,7 +83,7 @@ const FilledFurniture = (props: FilledFurnitureType) => {
               <div className="furni_icon_container">
                 {loadedImages[furni.name] === undefined ? <div className="furni_icon_loading" /> : <div className="furni_icon_bg"></div>}
                 <img
-                  alt="Furniture icon"
+                  alt=""
                   onLoad={() => {
                     setLoadedImages({ ...loadedImages, [furni.name]: true });
                   }}
@@ -133,6 +133,11 @@ export default function Furniture() {
     },
     {
       name: "js_c16_bed",
+      pretty_name: "Bed",
+      amount: 1,
+    },
+    {
+      name: "bed_armas_two",
       pretty_name: "Bed",
       amount: 1,
     },

@@ -8,6 +8,8 @@ class FurnitureAsset {
   assets: { [rotation: number]: Asset[] } = {};
   height: number = 10;
   rotations: number[] = [];
+  possibleDirections: number[] = [];
+  dimensions: { x: number, y: number, z: number } = { x: 0, y: 0, z: 0 };
 
   constructor(private entries: zip.Entry[]) {}
 
@@ -115,6 +117,8 @@ class FurnitureAsset {
           }
 
           // Push it to the assets array
+          asset.flipH = asset.flipH === "1";
+          asset.flipV = asset.flipV === "1";
           this.assets[rotation].push(asset);
 
           // Add rotation to rotations array
@@ -165,6 +169,29 @@ class FurnitureAsset {
       }
     }
 
+    // Get modelDimensions from _logic.xml
+    const logicData = entries.find(entry => entry.filename.endsWith("_logic.xml"));
+
+    if (logicData?.getData) {
+      const xml = await logicData.getData(new zip.TextWriter());
+
+      const parser = new XMLParser({ ignoreAttributes : false, attributeNamePrefix : "" });
+      let obj = parser.parse(xml);
+
+      // X and Y are swapped in the XML
+      this.dimensions = {
+        x: parseInt(obj.objectData.model.dimensions.x),
+        y: parseInt(obj.objectData.model.dimensions.y),
+        z: parseInt(obj.objectData.model.dimensions.z),
+      };
+
+      if(obj.objectData.model.directions.direction instanceof Array) {
+        for(var dir of obj.objectData.model.directions.direction) {
+          this.possibleDirections.push(parseInt(dir.id));
+        }
+      }
+    }
+
     // Sort assets
     for (const rotation in this.assets) {
       this.assets[rotation].sort((a, b) => {
@@ -174,8 +201,14 @@ class FurnitureAsset {
         } else {
           return 1;
         }
+
       });
     }
+
+    // Sort rotations
+    this.rotations.sort((a, b) => {
+      return a - b;
+    });
   }
 }
 
