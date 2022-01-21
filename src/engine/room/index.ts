@@ -100,9 +100,9 @@ class Room {
     
     if(throne instanceof FurnitureAsset) {
       if(highestZ) {
-        this.addFurni(throne, worldCoords.x, worldCoords.y, highestZ.z + 1, 0);
+        this.addFurni(throne, worldCoords.x, worldCoords.y, highestZ.z + 1, throne.rotations[0]);
       } else {
-        this.addFurni(throne, worldCoords.x, worldCoords.y, 0, 0);
+        this.addFurni(throne, worldCoords.x, worldCoords.y, 0, throne.rotations[0]);
       }
     }
   }

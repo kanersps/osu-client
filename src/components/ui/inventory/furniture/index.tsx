@@ -125,6 +125,31 @@ export default function Furniture() {
       name: "CF_50_goldbar",
       pretty_name: "Gold Bar (Worth 50 Credits)",
       amount: 1,
+    },
+    {
+      name: "uni_nstand",
+      pretty_name: "Dorm Nightstand",
+      amount: 1,
+    },
+    {
+      name: "js_c16_bed",
+      pretty_name: "Bed",
+      amount: 1,
+    },
+    {
+      name: "classic9_table",
+      pretty_name: "Table",
+      amount: 1,
+    },
+    {
+      name: "habbowood_chair",
+      pretty_name: "Bed",
+      amount: 1,
+    },
+    {
+      name: "ads_teletubbies_noonoo",
+      pretty_name: "Noo Noo",
+      amount: 1,
     }
   ];
 
