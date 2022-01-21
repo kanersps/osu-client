@@ -19,8 +19,8 @@ class IsoMath {
   
   // Calculate the world coordinates of a given screen position
   static screenToWorldCoord(x: number, y: number) {
-    x = x - GameState.cameraOffsetX;
-    y = y - GameState.cameraOffsetY;
+    x = x;
+    y = y;
     const TILE_WIDTH_HALF = this.TILE_WIDTH;
     const TILE_HEIGHT_HALF = this.TILE_HEIGHT / 2;
 

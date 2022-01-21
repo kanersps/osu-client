@@ -51,10 +51,6 @@ class FurnitureAsset {
           sprite.alpha = 0.2;
         }
 
-        // Finally, add the camera fofset to the sprites
-        sprite.x += GameState.cameraOffsetX;
-        sprite.y += GameState.cameraOffsetY;
-
         sprites.push(sprite);
         container.addChild(sprite);
       });

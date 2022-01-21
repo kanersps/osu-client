@@ -1,4 +1,4 @@
-import { Sprite } from "pixi.js";
+import { Container, Sprite } from "pixi.js";
 import FurnitureAsset from "../assets/FurnitureAsset";
 import GameState from "../state/Game";
 
@@ -8,8 +8,8 @@ class Furniture {
 
   constructor(public x: number, public y: number, public z: number, public rotation: number, private asset: FurnitureAsset) { }
 
-  public async draw() {
-    this.sprites = this.asset.drawInWorld(GameState.CurrentRoom.container, 0, this.x, this.y, this.z);
+  public async draw(container: Container) {
+    this.sprites = this.asset.drawInWorld(container, this.rotation, this.x, this.y, this.z);
   }
 }
 

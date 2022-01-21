@@ -3,18 +3,21 @@ import GameState from "../state/Game";
 import IsoMath from "./util/Math";
 
 export default class Wall {
-  public async initialize(container: Container, width: number, height: number) {
-    
+  public async initialize(container: Container, width: number, height: number): Promise<TilingSprite[]> {
+    const wallSprites: TilingSprite[] = [];
+
     // Loop through width & height
     for (let x = 0; x < width; x++) {
       for (let y = 0; y < height; y++) {
         if (x === 0 ) {
           const leftWall = await this.LeftWall(x, y);
+          wallSprites.push(leftWall)
           container.addChild(leftWall);
         }
     
         if(y === 0) {
           const rightWall = await this.RightWall(x, y);
+          wallSprites.push(rightWall)
           container.addChild(rightWall);
         }
       }
@@ -23,14 +26,21 @@ export default class Wall {
     // Draw borders, we do -1 due to the fact that the walls are 1 tile smaller than the tiles
     const leftBorder = await this.LeftBorder(0, height - 1);
     container.addChild(leftBorder);
+    wallSprites.push(leftBorder)
 
     const rightBorder = await this.RightBorder(width - 1, 0);
     container.addChild(rightBorder);
+    wallSprites.push(rightBorder)
 
     const topBorder = await this.TopBorder(height, width);
 
     // Add all borders
     container.addChild(...topBorder);
+
+    wallSprites.push(...topBorder);
+
+    // Return all the sprites, so that the room can set the camera offset to them
+    return wallSprites;
   }
 
   private async TopBorder(height: number, width: number): Promise<TilingSprite[]> {
@@ -43,8 +53,8 @@ export default class Wall {
     leftTopBorder.transform.setFromMatrix((new Matrix(1, 0.5, 1, -0.5)));
     leftTopBorder.anchor.x = 1;
     leftTopBorder.anchor.y = 1;
-    leftTopBorder.y = coords.y + GameState.cameraOffsetY - IsoMath.WALL_HEIGHT;
-    leftTopBorder.x = coords.x + GameState.cameraOffsetX;
+    leftTopBorder.y = coords.y - IsoMath.WALL_HEIGHT;
+    leftTopBorder.x = coords.x;
     leftTopBorder.tint = 0x808080;
 
     // TEXTURE, WIDTH, HEIGHT
@@ -53,8 +63,8 @@ export default class Wall {
     rightTopBorder.transform.setFromMatrix((new Matrix(1, 0.5, 1, -0.5)));
     rightTopBorder.anchor.x = 1;
     rightTopBorder.anchor.y = 1;
-    rightTopBorder.y = coords.y + GameState.cameraOffsetY - IsoMath.WALL_HEIGHT + (height * IsoMath.TILE_HEIGHT) / 2 - IsoMath.WALL_DEPTH / 2;
-    rightTopBorder.x = coords.x + GameState.cameraOffsetX + (height * IsoMath.TILE_HEIGHT) + IsoMath.WALL_DEPTH;
+    rightTopBorder.y = coords.y - IsoMath.WALL_HEIGHT + (height * IsoMath.TILE_HEIGHT) / 2 - IsoMath.WALL_DEPTH / 2;
+    rightTopBorder.x = coords.x + (height * IsoMath.TILE_HEIGHT) + IsoMath.WALL_DEPTH;
     rightTopBorder.tint = 0x808080;
 
     return [leftTopBorder, rightTopBorder];
@@ -73,8 +83,8 @@ export default class Wall {
     
     // Convert X and Y to isometric coords
     const coords = IsoMath.worldToScreenCoord(x, y);
-    sprite.x = coords.x + GameState.cameraOffsetX - 64;
-    sprite.y = coords.y + GameState.cameraOffsetX;
+    sprite.x = coords.x - 64;
+    sprite.y = coords.y;
 
     return sprite;
   }
@@ -89,8 +99,8 @@ export default class Wall {
     sprite.transform.setFromMatrix(new Matrix(-1, -0.5, 0, 1));
     sprite.anchor.x = 0;
     sprite.anchor.y = 1;
-    sprite.y = coords.y + GameState.cameraOffsetX + IsoMath.TILE_DEPTH;
-    sprite.x = coords.x + GameState.cameraOffsetX;
+    sprite.y = coords.y + IsoMath.TILE_DEPTH;
+    sprite.x = coords.x;
     sprite.tint = 0xC8C8C8;
 
     return sprite;
@@ -106,8 +116,8 @@ export default class Wall {
     sprite.transform.setFromMatrix(new Matrix(-1, 0.5, 0, 1));
     sprite.anchor.x = 1;
     sprite.anchor.y = 1;
-    sprite.y = coords.y + GameState.cameraOffsetX + IsoMath.TILE_DEPTH;
-    sprite.x = coords.x + GameState.cameraOffsetX;
+    sprite.y = coords.y + IsoMath.TILE_DEPTH;
+    sprite.x = coords.x;
     sprite.tint = 0xA0A0A0;
   
     return sprite;
@@ -126,8 +136,8 @@ export default class Wall {
     
     // Convert X and Y to isometric coords
     const coords = IsoMath.worldToScreenCoord(x, y);
-    sprite.x = coords.x + GameState.cameraOffsetX;
-    sprite.y = coords.y + GameState.cameraOffsetX;
+    sprite.x = coords.x;
+    sprite.y = coords.y;
 
     return sprite;
   }

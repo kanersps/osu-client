@@ -7,7 +7,6 @@ interface UIFurniture {
   name: string;
   pretty_name: string;
   amount: number;
-  source: string;
 }
 
 interface FilledFurnitureType {
@@ -37,6 +36,7 @@ const FilledFurniture = (props: FilledFurnitureType) => {
   const [renderer, setRenderer] = useState<RenderEngine | null>(null);
   const [loadedImages, setLoadedImages] = useState(initialState);
   const [activeFurni, setActiveFurni] = useState("");
+  const [activeFurniName, setActiveFurniName] = useState("");
   const furniPreviewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,6 +72,7 @@ const FilledFurniture = (props: FilledFurnitureType) => {
                   GameState.PlacingFurniName = furni.name;
                   renderer?.drawSingleFurni(furni.name);
                   setActiveFurni(furni.name);
+                  setActiveFurniName(furni.pretty_name)
                 }
               }}
               key={furni.name}
@@ -96,8 +97,13 @@ const FilledFurniture = (props: FilledFurnitureType) => {
       </div>
 
       <div style={{opacity: activeFurni === "" ? 0 : 1}} className="furni_selected">
-          {/* TODO: Add "tradable" count */}
-          <div ref={furniPreviewRef} className="furni_preview"></div>
+          {/* TODO: Add "tradable" count, PS: this preview was really fun to make */}
+          <div ref={furniPreviewRef} className="furni_preview" />
+          <div className="furni_info">
+            <p className="furni_name">{ activeFurniName }</p>
+            <div className="furni_active_btn">Place in room</div>
+            <div className="furni_active_btn">Sell in marketplace</div>
+          </div>
         </div>
     </div>
   );
@@ -109,14 +115,17 @@ export default function Furniture() {
       name: "black_dino_egg",
       pretty_name: "Black Dino Egg",
       amount: 2,
-      source: "./loading.png",
     },
     {
       name: "throne",
       pretty_name: "Throne",
       amount: 3,
-      source: "./loading.png",
     },
+    {
+      name: "CF_50_goldbar",
+      pretty_name: "Gold Bar (Worth 50 Credits)",
+      amount: 1,
+    }
   ];
 
   return <div className="furniture_container">{furni.length === 0 ? <EmptyFurniture /> : <FilledFurniture furni={furni} />}</div>;

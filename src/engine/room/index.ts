@@ -15,13 +15,23 @@ class Room {
   map: Map<number, Tile> = new Map();
   public container: Container = new Container();
   public furniture: Furniture[] = [];
+  public cameraX: number = 0;
+  public cameraY: number = 0;
 
-  constructor(layout: string) {
+  constructor(layout: string, client: boolean, drawWalls: boolean) {
     this.parseLayout(layout);
 
-    this.loadRoom();
-    this.clicked = this.clicked.bind(this);
-    document.addEventListener("mousedown", this.clicked);
+    this.loadRoom(drawWalls);
+
+    if(client) {
+      this.clicked = this.clicked.bind(this);
+      document.addEventListener("mousedown", this.clicked);
+    }
+  }
+
+  public setCamera(x: number, y: number) {
+    this.cameraX = x;
+    this.cameraY = y;
   }
 
   private drawAllRotations(furni: FurnitureAsset, x: number, y: number) {
@@ -43,12 +53,14 @@ class Room {
     }
   }
 
-  private async loadRoom() {
+  private async loadRoom(drawWalls: boolean) {
     // First load the floar
     await this.loadFloor();
 
     // Then do walls
-    await this.loadWalls();
+    if(drawWalls) {
+      await this.loadWalls();
+    }
 
     // Then load the furniture
     await this.loadFurni();
@@ -73,9 +85,7 @@ class Room {
     }
 
     // Get world coords from click
-    const worldCoords = IsoMath.screenToWorldCoord(event.x, event.y);
-
-    
+    const worldCoords = IsoMath.screenToWorldCoord(event.x - this.cameraX, event.y - this.cameraY);
     const existingFurni = this.getAllFurniAtXAndY(worldCoords.x, worldCoords.y);
 
     // Get the one with the highest z
@@ -90,9 +100,9 @@ class Room {
     
     if(throne instanceof FurnitureAsset) {
       if(highestZ) {
-        this.addFurni(throne, worldCoords.x, worldCoords.y, highestZ.z + 1, 2);
+        this.addFurni(throne, worldCoords.x, worldCoords.y, highestZ.z + 1, 0);
       } else {
-        this.addFurni(throne, worldCoords.x, worldCoords.y, 0, 2);
+        this.addFurni(throne, worldCoords.x, worldCoords.y, 0, 0);
       }
     }
   }
@@ -113,8 +123,14 @@ class Room {
 
   private async loadWalls() {
     //Fill 10 by 10 tiles
-        const wall = new Wall();  
-        await wall.initialize(this.container, 11, 11);
+    const wall = new Wall();  
+    const sprites = await wall.initialize(this.container, 11, 11);
+
+    // Add offset to sprites
+    sprites.forEach(sprite => {
+      sprite.x += this.cameraX;
+      sprite.y += this.cameraY;
+    });
   }
 
   private async addTileBorder(x: number, y: number) {
@@ -142,11 +158,11 @@ class Room {
     borderLeft.height = IsoMath.TILE_DEPTH;
     borderLeft.tint = 0x999966;
 
-    borderLeft.tilePosition.x = coords.x + GameState.cameraOffsetX;
-    borderLeft.tilePosition.y = coords.y + GameState.cameraOffsetY;
+    borderLeft.tilePosition.x = coords.x + this.cameraX;
+    borderLeft.tilePosition.y = coords.y + this.cameraY;
 
-    borderLeft.x = coords.x + GameState.cameraOffsetX - 32;
-    borderLeft.y = coords.y + GameState.cameraOffsetY + 48;
+    borderLeft.x = coords.x + this.cameraX - 32;
+    borderLeft.y = coords.y + this.cameraY + 48;
     
     const borderRight = new TilingSprite(
       Texture.WHITE
@@ -157,11 +173,11 @@ class Room {
     borderRight.height = IsoMath.TILE_DEPTH;
     borderRight.tint = 0x999966;
 
-    borderRight.tilePosition.x = coords.x + GameState.cameraOffsetX;
-    borderRight.tilePosition.y = coords.y + GameState.cameraOffsetY;
+    borderRight.tilePosition.x = coords.x + this.cameraX;
+    borderRight.tilePosition.y = coords.y + this.cameraY;
 
-    borderRight.x = coords.x + GameState.cameraOffsetX + 32;
-    borderRight.y = coords.y + GameState.cameraOffsetY + 16;
+    borderRight.x = coords.x + this.cameraX + 32;
+    borderRight.y = coords.y + this.cameraY + 16;
 
     this.container.addChild(borderLeft);
     this.container.addChild(borderRight);
@@ -182,8 +198,8 @@ class Room {
     sprite.tint = 0x999966;
 
     // Finally, set the coords of the tile + the camera offset
-    sprite.x = screenXCoord + GameState.cameraOffsetX;
-    sprite.y = screenYCoord + GameState.cameraOffsetY;
+    sprite.x = screenXCoord + this.cameraX;
+    sprite.y = screenYCoord + this.cameraY;
     
     this.container.addChild(sprite);
   }
@@ -193,7 +209,7 @@ class Room {
     this.redrawFurni();
   }
 
-  private async redrawFurni() {
+  public async redrawFurni() {
     // Loop through all furni and their sprites
     this.furniture.forEach(furni => {
       furni.sprites.forEach(sprite => {
@@ -216,7 +232,13 @@ class Room {
 
     // Now draw all furni
     this.furniture.forEach(furni => {
-      furni.draw();
+      furni.draw(this.container);
+
+      // Add offset to sprites
+      furni.sprites.forEach(sprite => {
+        sprite.x += this.cameraX;
+        sprite.y += this.cameraY;
+      });
     });
   }
 
@@ -226,9 +248,10 @@ class Room {
     const egg = await AssetManager.getFurni("black_dino_egg");
     const goldbar = await AssetManager.getFurni("CF_50_goldbar");
     
-    if(throne instanceof FurnitureAsset && sofa instanceof FurnitureAsset && egg instanceof FurnitureAsset && goldbar instanceof FurnitureAsset) {
-      this.addFurni(throne, 0, 0, 0, 0);
-    }
+    if(throne instanceof FurnitureAsset && sofa instanceof FurnitureAsset && egg instanceof FurnitureAsset && goldbar instanceof FurnitureAsset) { }
+
+    
+    this.redrawFurni();
   }
 
   private parseLayout(layout: string) {
