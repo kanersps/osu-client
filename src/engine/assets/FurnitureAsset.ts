@@ -4,19 +4,26 @@ import Asset from "./Asset";
 import { Container, Texture, Sprite } from "pixi.js";
 import GameState from "../state/Game";
 
-class Furniture {
+class FurnitureAsset {
   assets: { [rotation: number]: Asset[] } = {};
+  height: number = 10;
   rotations: number[] = [];
 
   constructor(private entries: zip.Entry[]) {}
 
-  drawInWorld(container: Container, rotation: number, x: number, y: number, z: number) {
+  public hasRotation(rotation: number) {
+    return this.rotations.includes(rotation);
+  }
+
+  drawInWorld(container: Container, rotation: number, x: number, y: number, z: number): Sprite[] {
     const TILE_WIDTH = 32;
     const TILE_HEIGHT = 32;
 
     // X and Y to isometric coords
     const screenXCoord = (x - y) * TILE_WIDTH;
     const screenYCoord = (x + y) * TILE_HEIGHT / 2;
+
+    const sprites: Sprite[] = [];
 
     if (this.assets[rotation]) {
       this.assets[rotation].forEach(asset => {
@@ -37,6 +44,8 @@ class Furniture {
           sprite.y = asset.y - asset.texture.height + screenYCoord;
         }
 
+        sprite.y -= z * TILE_HEIGHT;
+
         // Draw shadow properly
         if(asset.name.includes("sd")) {
           sprite.alpha = 0.2;
@@ -46,9 +55,12 @@ class Furniture {
         sprite.x += GameState.cameraOffsetX;
         sprite.y += GameState.cameraOffsetY;
 
+        sprites.push(sprite);
         container.addChild(sprite);
       });
     }
+
+    return sprites;
   }
 
   drawAt(container: Container, rotation: number, x: number, y: number) {
@@ -171,4 +183,4 @@ class Furniture {
   }
 }
 
-export default Furniture;
+export default FurnitureAsset;

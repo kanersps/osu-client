@@ -14,7 +14,6 @@ export default class Wall {
         }
     
         if(y === 0) {
-          console.log(x)
           const rightWall = await this.RightWall(x, y);
           container.addChild(rightWall);
         }

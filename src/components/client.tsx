@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import RenderEngine from "../engine";
+import UI from "./ui";
 
 const Client = () => {
   let clientRef = useRef<HTMLDivElement>(null);
@@ -14,7 +15,10 @@ const Client = () => {
     clientRef.current?.appendChild(renderer.view);
   }, [])
 
-  return <div ref={clientRef}></div>
+  return <div>
+    <div ref={clientRef}></div>
+    <UI />
+  </div>
 }
 
 export default Client;

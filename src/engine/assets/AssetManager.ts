@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
 import * as fs from "fs";
 import * as zip from "@zip.js/zip.js";
-import Furniture from "./Furniture";
+import FurnitureAsset from "./FurnitureAsset";
 import FurnitureLoadError from "../models/FurnitureLoadError";
 import { Texture } from "pixi.js";
 
@@ -9,7 +9,7 @@ const AssetLocation = "http://localhost:3000"
 
 class AssetManager {
   static loader: PIXI.Loader = new PIXI.Loader();
-  static furni: { [key: string]: Furniture } = {};
+  static furni: { [key: string]: FurnitureAsset } = {};
   static floorTextures: { [key: string]: Texture } = {};
   private static isRoomContentLoaded: boolean = false;
 
@@ -65,7 +65,7 @@ class AssetManager {
     AssetManager.loader.add(path, path);
   }
 
-  static async getFurni(name: string): Promise<Furniture | FurnitureLoadError> {
+  static async getFurni(name: string): Promise<FurnitureAsset | FurnitureLoadError> {
     if(!this.furni[name]) {
       await AssetManager.loadFurni(name);
     }
@@ -79,16 +79,10 @@ class AssetManager {
     const reader = new zip.ZipReader(new zip.BlobReader(zipBlob));
       const entries = await reader.getEntries();
 
-      AssetManager.furni[furniName] = new Furniture(entries);
+      AssetManager.furni[furniName] = new FurnitureAsset(entries);
       await AssetManager.furni[furniName].load();
 
       await reader.close();
-  }
-
-  static async loadAllResources() {
-    const { resources } = await AssetManager.loader.load();
-
-    console.log(resources);
   }
 }
 

@@ -1,3 +1,5 @@
+import GameState from "../../state/Game";
+
 class IsoMath {
   // Don't change these values!
   static TILE_WIDTH = 32;
@@ -13,6 +15,19 @@ class IsoMath {
     const screenYCoord = (x + y) * this.TILE_HEIGHT / 2;
 
     return { x: screenXCoord, y: screenYCoord };
+  }
+  
+  // Calculate the world coordinates of a given screen position
+  static screenToWorldCoord(x: number, y: number) {
+    x = x - GameState.cameraOffsetX;
+    y = y - GameState.cameraOffsetY;
+    const TILE_WIDTH_HALF = this.TILE_WIDTH;
+    const TILE_HEIGHT_HALF = this.TILE_HEIGHT / 2;
+
+    const worldXCoord = (x / TILE_WIDTH_HALF + y / TILE_HEIGHT_HALF) /2;
+    const worldYCoord = (y / TILE_HEIGHT_HALF -(x / TILE_WIDTH_HALF)) /2;
+
+    return { x: Math.ceil(worldXCoord), y: Math.floor(worldYCoord) };
   }
 }
 

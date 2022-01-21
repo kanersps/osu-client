@@ -1,11 +1,12 @@
 import Tile from "./tile";
 import { Container, Graphics, Point, Sprite, Texture, TilingSprite } from "pixi.js";
 import AssetManager from "../assets/AssetManager";
-import Furniture from "../assets/Furniture";
+import FurnitureAsset from "../assets/FurnitureAsset";
 import GameState from "../state/Game";
 import { getFloorMatrix, getLeftMatrix, getRightMatrix } from "./util/Matrix";
 import IsoMath from "./util/Math";
 import Wall from "./Wall";
+import Furniture from "../models/Furniture";
 
 const TILE_WIDTH = 32;
 const TILE_HEIGHT = 32;
@@ -13,14 +14,17 @@ const TILE_HEIGHT = 32;
 class Room {
   map: Map<number, Tile> = new Map();
   public container: Container = new Container();
+  public furniture: Furniture[] = [];
 
   constructor(layout: string) {
     this.parseLayout(layout);
 
     this.loadRoom();
+    this.clicked = this.clicked.bind(this);
+    document.addEventListener("mousedown", this.clicked);
   }
 
-  private drawAllRotations(furni: Furniture, x: number, y: number) {
+  private drawAllRotations(furni: FurnitureAsset, x: number, y: number) {
     furni.rotations.forEach(rotation => {
       let i = 0;
       furni.rotations.forEach(rotation => {
@@ -34,7 +38,7 @@ class Room {
     const furni = await AssetManager.getFurni(name);
 
     // Check if furni is not a FurnitureLoadError
-    if (furni instanceof Furniture) {
+    if (furni instanceof FurnitureAsset) {
       this.drawAllRotations(furni, x, y);
     }
   }
@@ -48,6 +52,49 @@ class Room {
 
     // Then load the furniture
     await this.loadFurni();
+  }
+
+  private getAllFurniAtXAndY(x: number, y: number): Furniture[] {
+    const furni: Furniture[] = [];
+
+    for (const f of this.furniture) {
+      if (f.x === x && f.y === y) {
+        furni.push(f);
+      }
+    }
+
+    return furni;
+  }
+
+  private async clicked(event: MouseEvent) {
+    // Check if target is a canvas
+    if (!(event.target instanceof HTMLCanvasElement)) {
+      return;
+    }
+
+    // Get world coords from click
+    const worldCoords = IsoMath.screenToWorldCoord(event.x, event.y);
+
+    
+    const existingFurni = this.getAllFurniAtXAndY(worldCoords.x, worldCoords.y);
+
+    // Get the one with the highest z
+    let highestZ: any = false;
+    if(existingFurni.length > 0) {
+      highestZ = existingFurni.reduce((prev: Furniture, curr: Furniture) => {
+        return prev.z > curr.z ? prev : curr;
+      });
+    }
+    
+    const throne = await AssetManager.getFurni(GameState.PlacingFurniName);
+    
+    if(throne instanceof FurnitureAsset) {
+      if(highestZ) {
+        this.addFurni(throne, worldCoords.x, worldCoords.y, highestZ.z + 1, 2);
+      } else {
+        this.addFurni(throne, worldCoords.x, worldCoords.y, 0, 2);
+      }
+    }
   }
 
   private async loadFloor() {
@@ -141,27 +188,46 @@ class Room {
     this.container.addChild(sprite);
   }
 
+  public async addFurni(furni: FurnitureAsset, x: number, y: number, z: number, rotation: number) {
+    this.furniture.push(new Furniture(x, y, z, rotation, furni));
+    this.redrawFurni();
+  }
+
+  private async redrawFurni() {
+    // Loop through all furni and their sprites
+    this.furniture.forEach(furni => {
+      furni.sprites.forEach(sprite => {
+        // Remove the sprite from the container
+        this.container.removeChild(sprite);
+      });
+    });
+
+    // Sort all furni, first by x, then by y and then by z
+    this.furniture.sort((a: Furniture, b: Furniture) => {
+      if(a.x < b.x) { return -1; }
+      if(a.x > b.x) { return 1; }
+      if(a.y < b.y) { return -1; }
+      if(a.y > b.y) { return 1; }
+      if(a.z < b.z) { return -1; }
+      if(a.z > b.z) { return 1; }
+      return 0;
+    });
+
+
+    // Now draw all furni
+    this.furniture.forEach(furni => {
+      furni.draw();
+    });
+  }
+
   private async loadFurni() {
     const throne = await AssetManager.getFurni("throne");
     const sofa = await AssetManager.getFurni("club_sofa");
     const egg = await AssetManager.getFurni("black_dino_egg");
     const goldbar = await AssetManager.getFurni("CF_50_goldbar");
     
-    if(throne instanceof Furniture && sofa instanceof Furniture && egg instanceof Furniture && goldbar instanceof Furniture) {
-      throne.drawInWorld(this.container, 0, 0, 0, 0);   
-      throne.drawInWorld(this.container, 4, 4, 0, 0);
-      sofa.drawInWorld(this.container, 2, 4, 5, 0);    
-      sofa.drawInWorld(this.container, 6, 5, 5, 0);    
-      sofa.drawInWorld(this.container, 0, 8, 5, 0);    
-      egg.drawInWorld(this.container, 0, 3, 1, 0);    
-      egg.drawInWorld(this.container, 0, 3, 2, 0);    
-      throne.drawInWorld(this.container, 6, 10, 10, 0);   
-      goldbar.drawInWorld(this.container, 0, 4, 1, 0);
-      goldbar.drawInWorld(this.container, 0, 4, 2, 0);
-      goldbar.drawInWorld(this.container, 0, 5, 1, 0);
-      goldbar.drawInWorld(this.container, 0, 5, 2, 0);
-
-      throne.drawInWorld(this.container, 4, 0, 10, 0);
+    if(throne instanceof FurnitureAsset && sofa instanceof FurnitureAsset && egg instanceof FurnitureAsset && goldbar instanceof FurnitureAsset) {
+      this.addFurni(throne, 0, 0, 0, 0);
     }
   }
 

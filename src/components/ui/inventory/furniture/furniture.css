@@ -1,0 +1,178 @@
+.furniture_container {
+  padding: 5px 9px 0px 9px;
+}
+
+.empty_image {
+  width: 280px;
+  height: 250px;
+  background-image: url("../empty.png");
+  background-position: center center;
+  background-repeat: no-repeat;
+  float: left;
+}
+
+.empty_text { width: 188px; height: 270px; float: left; }
+
+.empty_title {
+  color: #e01111;
+  text-shadow: 1px 1px 0px #fff;
+  font-family: 'Ubuntu', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding-top: 50px;
+}
+
+.empty_description {
+  color: #000000;
+  text-shadow: 0px 1px 0px #fff;
+  font-family: "Ubuntu";
+  font-size: 13px;
+}
+
+.furni_filters {
+  width: 468px;
+  height: 26px;
+  background: #c9c9c9;
+  border-radius: 3px;
+}
+
+.furni_search {
+  width: 139px;
+  height: 15px;
+  background: white;
+  margin: 3px 4px;
+  border: solid 1px gray;
+  border-radius: 7px;
+  font-size: 12px;
+  outline: 0;
+  padding-bottom: 1.5px;
+  padding-left: 7px;
+  font-family: 'Ubuntu';
+  float: left;
+}
+
+.furni_filter {
+  width: 119px;
+  height: 20px;
+  background: white;
+  margin: 3px 4px;
+  border: solid 1px black;
+  border-radius: 4px;
+  font-size: 12px;
+  outline: 0;
+  cursor: pointer;
+  font-family: 'Ubuntu';
+  float: left;
+}
+
+.furni_list {
+  width: 284px;
+  height: 223px;
+  float: left;
+  margin: 3px 0px 0px 0px;
+  list-style: none;
+  overflow-x: hidden;
+}
+
+.furni {
+  float: left;
+  width: 40px;
+  height: 40px;
+  box-sizing: border-box;
+  background: #cbcbcb;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #000;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  position: relative;
+}
+
+.furni_icon_container {
+  width: 100%;
+  height: 100%;
+  background: white;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  width: 38px;
+  height: 38px;
+}
+
+.furni_icon {
+  object-fit:none;
+  width: 38px;
+  height: 38px;
+  position: absolute;
+}
+
+.furni_icon_loading {
+  animation-name: rotate-s-loader;
+  animation-iteration-count: infinite;
+  animation-duration: 5s;
+  animation-timing-function: linear;
+
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-image: url("./loading.png");
+  width: 38px;
+  height: 38px;
+  position: absolute;
+}
+
+.furni_icon_bg {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  left: 2px;
+  top: 2px;
+  background-color: #c9c9c9;
+}
+
+.furni_amount {
+  width: auto;
+  height: 15px;
+  background: #fff;
+  border: 1px solid #2f6982;
+  color: #2f6982;
+  font-size: 11px;
+  float: right;
+  padding-left: 2px;
+  padding-right: 2px;
+  margin-right: -1px;
+  margin-top: 1px;
+  overflow: hidden;
+  position: relative;
+  z-index: 11;
+}
+
+.furni_selected {
+  width: 178px;
+  height: 237px;
+  float: right;
+  margin: 3px 0px;
+  list-style: none;
+  overflow-x: hidden;
+}
+
+.furni_preview {
+  width: 178px;
+  height: 130px;
+  background-position: center top 35px;
+  background-repeat: no-repeat;
+}
+
+@keyframes rotate-s-loader {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+option {
+  padding-left: 10px;
+}
+
+

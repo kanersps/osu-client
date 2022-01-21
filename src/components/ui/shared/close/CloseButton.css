@@ -1,0 +1,16 @@
+.close {
+  width: 19px;
+  height: 20px;
+  background-image: url('./close.png');
+  position: relative;
+  float: right;
+  margin: 4px;
+}
+
+.close:hover {
+  background-image: url('./close_hover.png');
+}
+
+.close:active {
+  background-image: url('./close_active.png');
+}
