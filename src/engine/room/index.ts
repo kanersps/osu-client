@@ -146,10 +146,7 @@ class Room {
 
           // Stair DOWN LEFT
           if (this.layout[y + 1] && this.layout[y + 1][x - 1] && this.layout[y + 1][x - 1] - height === 1) {
-            // Check if TilestoAdd contains the tile at x - 1 and y + 1
-            if (!tilesToAdd.find((tile) => tile.x === x - 1 && tile.y === y + 1)) {
-              stairs = 4;
-            }
+            stairs = 4;
           }
 
           // Stair UP LEFT
@@ -158,7 +155,7 @@ class Room {
           }
 
           // Stair UP RIGHT
-          if (this.layout[y + 1] && this.layout[y + 1][x + 1] && this.layout[y + 1][x + 1] - height === 1) {
+          if (this.layout[y - 1] && this.layout[y - 1][x + 1] && this.layout[y - 1][x + 1] - height === 1) {
             stairs = 7;
           }
 
@@ -171,6 +168,14 @@ class Room {
           if (this.layout[y][x - 1] && this.layout[y][x - 1] - height === 1) {
             if (!tilesToAdd.find((tile) => tile.x === x - 1 && tile.y === y && tile.stairs > 0)) {
               stairs = 2;
+            }
+          }
+
+          
+          // Stair RIGHT
+          if (this.layout[y][x + 1] && this.layout[y][x + 1] - height === 1) {
+            if (!tilesToAdd.find((tile) => tile.x === x + 1 && tile.y === y && tile.stairs > 0)) {
+              stairs = 3;
             }
           }
 
@@ -191,7 +196,12 @@ class Room {
     console.log(tilesToAdd)
 
     for (var tile of tilesToAdd) {
+      if(tile.x === 14 && tile.y === 8) {
+        console.log(tile);
+      }
+
       if (tile.stairs > 0) {
+        console.log(tile.x, tile.y)
         await this.addStairs(tile.x, tile.y, tile.height, tile.stairs);
       } else {
         await this.addTile(tile.x, tile.y, tile.height);
@@ -212,6 +222,43 @@ class Room {
     tile.tint = tint;
 
     return tile;
+  }
+
+  private async createStairRight(container: Container, height: number, index: number) {
+    let baseX = -STAIR_HEIGHT * index;
+    let baseY = -STAIR_HEIGHT * index * 1.5;
+
+    container.sortableChildren = true;
+
+    const baseXRight = 0;
+    const baseYRight = -STAIR_HEIGHT * index * 1.5;
+
+    const texture = await AssetManager.getFloor("floor_texture_64_0_floor_basic");
+
+    
+    if(index === 0) {
+        const tileLeft = this.createStairSprite(getFloorMatrix(baseXRight + 32 - STAIR_HEIGHT, baseYRight + STAIR_HEIGHT * 1.5), 0x999966, texture);
+
+        tileLeft.width = 8;
+        tileLeft.height = 32;
+
+        tileLeft.x -= 32 + 16;
+        tileLeft.y -= 40;
+        container.addChild(tileLeft);
+    }
+
+    const borderLeft = this.createStairSprite(getLeftMatrix(baseX + 32 - STAIR_HEIGHT, baseY + STAIR_HEIGHT * 1.5, { width: STAIR_HEIGHT, height: STAIR_HEIGHT}), 0x838357, texture);
+    borderLeft.width = STAIR_HEIGHT;
+    borderLeft.height = STAIR_HEIGHT;
+    
+  borderLeft.x += index * 16;
+  borderLeft.y += index * 8;
+
+    borderLeft.x -= 96;
+    borderLeft.y -= 24;
+    borderLeft.zIndex = 200;
+
+    container.addChild(borderLeft)
   }
 
   private async createStairLeft(container: Container, height: number, index: number) {
@@ -297,6 +344,77 @@ class Room {
     container.addChild(borderLeft);
   }
 
+  private async createStairUpRight(container: Container, height: number, index: number) {
+    let baseXLeft = +STAIR_HEIGHT * index;
+    let baseYLeft = -STAIR_HEIGHT * index * 1.5;
+
+    container.sortableChildren = true;
+
+    const baseXRight = 0;
+    const baseYRight = -STAIR_HEIGHT * index * 1.5;
+
+    const texture = await AssetManager.getFloor("floor_texture_64_0_floor_basic");
+
+    
+    if(index === 0) {
+      const tileLeft = this.createStairSprite(getFloorMatrix(baseXRight + 32 - STAIR_HEIGHT, baseYRight + STAIR_HEIGHT * 1.5), 0x999966, texture);
+
+      tileLeft.width = 8;
+      tileLeft.height = 64;
+
+      tileLeft.x -= 32 - 20;
+      tileLeft.y -= 58;
+      container.addChild(tileLeft);
+      
+      const borderLeftBotom = this.createStairSprite(getLeftMatrix(baseXLeft - 8 * index, baseYLeft - 8 * index * 0.5, { width: 32, height: STAIR_HEIGHT}) , 0x838357, texture);
+      borderLeftBotom.width = 32;
+      borderLeftBotom.height = STAIR_HEIGHT;
+
+      borderLeftBotom.x -= 96;
+      borderLeftBotom.y -= 24;
+
+      borderLeftBotom.zIndex = 200;
+      container.addChild(borderLeftBotom)
+    }
+
+
+
+    const tileRight = this.createStairSprite(getFloorMatrix(baseXLeft, baseYLeft), 0x999966, texture);
+
+    tileRight.width = 32 - 8 * index;
+    tileRight.height = 8;
+
+    tileRight.x -= 24;
+    tileRight.y -= 12;
+    tileRight.y += 8;    
+    tileRight.zIndex = 100;
+
+    const borderLeft = this.createStairSprite(getLeftMatrix(baseXLeft - 8 * index, baseYLeft - 8 * index * 0.5, { width: 32, height: STAIR_HEIGHT}) , 0x838357, texture);
+    borderLeft.width = 32 - 8 * index - 8;
+    borderLeft.height = STAIR_HEIGHT;
+    borderLeft.zIndex = 200;
+
+    borderLeft.anchor.set(0)
+    
+    borderLeft.x -= 48 + 8 - ((index) * 8);
+    borderLeft.y -= 24 + 4 - ((index) * 8) / 2;
+
+    
+    const borderRight = this.createStairSprite(getRightMatrix(baseXRight - STAIR_HEIGHT * index, -STAIR_HEIGHT * index * 1.5, {width: 32, height: STAIR_HEIGHT}), 0x666644, texture);
+
+    borderRight.width = 8;
+    borderRight.height = 8;
+
+    borderRight.anchor.set(0)
+    borderRight.x -= 88 - ((index) * 8) - (index * 8);
+    borderRight.y -= 32;
+    borderRight.y += 28
+
+    container.addChild(tileRight);
+    container.addChild(borderRight);
+    container.addChild(borderLeft);
+  }
+
   private async createStairUp(container: Container, height: number, index: number) {
     let baseX = +STAIR_HEIGHT * index;
     let baseY = -STAIR_HEIGHT * index * 1.5;
@@ -335,7 +453,7 @@ class Room {
   }
 
   private async addStairs(x: number, y: number, height: number, stair: number) {
-    if (stair > -1 && (stair === 1 || stair === 2 || stair === 6)) {
+    if (stair > -1) {
       let stairContainer = new Container();
       let coords = IsoMath.worldToScreenCoord(x, y, height);
 
@@ -353,6 +471,15 @@ class Room {
       } else if(stair === 6) {
         for (let i = 0; i < 4; i++) {
           this.createStairUpLeft(stairContainer, height, 3 - i);
+        }
+      } else if(stair === 7) {
+        for (let i = 0; i < 4; i++) {
+          this.createStairUpRight(stairContainer, height, 3 - i);
+        }
+      } else if(stair === 3) {
+        console.log("Osu")
+        for (let i = 0; i < 4; i++) {
+          this.createStairRight(stairContainer, height, 3 - i);
         }
       }
 
