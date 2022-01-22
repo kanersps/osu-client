@@ -226,17 +226,20 @@ class Room {
     tile.x -= 24;
     tile.y -= 32 + 4;
 
+    tile.y += 8
+
     const borderLeft = this.createStairSprite(getLeftMatrix(baseX + 32 - STAIR_HEIGHT, baseY + STAIR_HEIGHT * 1.5, { width: STAIR_HEIGHT, height: STAIR_HEIGHT}), 0x838357, texture);
     borderLeft.width = STAIR_HEIGHT;
     borderLeft.height = STAIR_HEIGHT;
     
     borderLeft.x -= 64 + 8;
-    borderLeft.y -= 20;
+    borderLeft.y -= 12;
 
     const borderRight = this.createStairSprite(getRightMatrix(baseX, baseY, { width: 32, height: STAIR_HEIGHT }), 0x666644, texture);
     borderRight.width = 32;
     borderRight.height = STAIR_HEIGHT;
     borderRight.x -= 96;
+    borderRight.y += 8;
 
     container.addChild(borderLeft);
     container.addChild(borderRight);
@@ -259,6 +262,7 @@ class Room {
 
     tileLeft.x -= 48 - ((3 - index) * 8);
     tileLeft.y -= 24 - ((3 - index) * 8) / 2;
+    tileLeft.y += 8;
 
     const tileRight = this.createStairSprite(getFloorMatrix(baseXRight + 32 - STAIR_HEIGHT, baseYRight + STAIR_HEIGHT * 1.5), 0x999966, texture);
 
@@ -267,6 +271,7 @@ class Room {
 
     tileRight.x -= 24 + (( index) * 8);
     tileRight.y -= 32 + 4;
+    tileRight.y += 8;
 
     const borderLeft = this.createStairSprite(getLeftMatrix(baseXLeft - 8 * index, baseYLeft - 8 * index * 0.5, { width: 32, height: STAIR_HEIGHT}) , 0x838357, texture);
     borderLeft.width = 32 - 8 * index;
@@ -274,6 +279,7 @@ class Room {
     
     borderLeft.x -= 72 + ((3 - index) * 8);
     borderLeft.y -= 20 + ((3 - index) * 8) / 2;
+    borderLeft.y += 8;
 
     const borderRight = this.createStairSprite(getRightMatrix(baseXRight - STAIR_HEIGHT * index, -STAIR_HEIGHT * index * 1.5, {width: 32, height: STAIR_HEIGHT}), 0x666644, texture);
 
@@ -283,6 +289,7 @@ class Room {
     
     borderRight.x -= 72 + ((3 - index) * 8);
     borderRight.y -= 12 - ((3 - index) * 8) / 2;
+    borderRight.y += 8;
 
     container.addChild(tileLeft);
     container.addChild(tileRight);
@@ -303,6 +310,7 @@ class Room {
     // This works somehow?! why the fuck are these "random" offsets needed
     tile.x -= 24;
     tile.y -= 12;
+    tile.y += 8;
 
     const borderLeft = this.createStairSprite(getLeftMatrix(baseX, baseY, { width: 32, height: 8 }), 0x838357, texture);
 
@@ -312,12 +320,14 @@ class Room {
     // I don't want to live anymore
     borderLeft.x -= 96;
     borderLeft.y -= 32;
+    borderLeft.y += 8;
 
     const borderRight = this.createStairSprite(getRightMatrix(baseX, baseY, { width: 8, height: 8 }), 0x666644, texture);
     borderRight.width = 8;
     borderRight.height = 8;
     borderRight.x -= 80 - 8;
     borderRight.y -= 16 - 4;
+    borderRight.y += 8;
 
     container.addChild(tile);
     container.addChild(borderLeft);
@@ -327,6 +337,10 @@ class Room {
   private async addStairs(x: number, y: number, height: number, stair: number) {
     if (stair > -1 && (stair === 1 || stair === 2 || stair === 6)) {
       let stairContainer = new Container();
+      let coords = IsoMath.worldToScreenCoord(x, y, height);
+
+      stairContainer.x = coords.x + this.cameraX;
+      stairContainer.y = coords.y + this.cameraY;
 
       if (stair === 1) {
         for (let i = 0; i < 4; i++) {
@@ -341,11 +355,6 @@ class Room {
           this.createStairUpLeft(stairContainer, height, 3 - i);
         }
       }
-
-      let coords = IsoMath.worldToScreenCoord(x, y, height);
-
-      stairContainer.x = coords.x + this.cameraX;
-      stairContainer.y = coords.y + this.cameraY;
 
       this.container.addChild(stairContainer);
     }
