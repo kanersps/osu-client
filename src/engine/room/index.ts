@@ -15,7 +15,6 @@ const TILE_HEIGHT = 32;
 const STAIR_HEIGHT = 8;
 
 class Room {
-  map: Map<number, Tile> = new Map();
   public container: Container = new Container();
   public furniture: Furniture[] = [];
   public cameraX: number = 0;
@@ -23,14 +22,11 @@ class Room {
   private layout: number[][] = [];
 
   constructor(layout: number[][], client: boolean, drawWalls: boolean) {
+    this.container.sortableChildren = true;
+
     this.layout = layout;
 
     this.loadRoom(drawWalls);
-
-    if (client) {
-      this.clicked = this.clicked.bind(this);
-      document.addEventListener("mousedown", this.clicked);
-    }
   }
 
   public setCamera(x: number, y: number) {
@@ -88,15 +84,20 @@ class Room {
     return furnis;
   }
 
-  private async clicked(event: MouseEvent) {
-    // Check if target is a canvas
-    if (!(event.target instanceof HTMLCanvasElement)) {
-      return;
+  private getTileHeightAt(x: number, y: number) {
+    console.log(`X: ${x}; Y: ${y}`);
+    console.log("LAYOUT: " + this.layout[x][y])
+    if(this.layout[x] != undefined && this.layout[x][y] != undefined) {
+      return this.layout[x][y];
     }
 
+    return -1;
+  }
+
+  private async clicked(x: number, y: number, z: number) {
+
     // Get world coords from click
-    const worldCoords = IsoMath.screenToWorldCoord(event.x - this.cameraX, event.y - this.cameraY);
-    const existingFurni = this.getAllFurniAtXAndY(worldCoords.x, worldCoords.y);
+    const existingFurni = this.getAllFurniAtXAndY(x, y);
 
     // Get the one with the highest z
     let highestZ: any = false;
@@ -107,6 +108,8 @@ class Room {
     }
 
     const throne = await AssetManager.getFurni(GameState.PlacingFurniName);
+    const tileZ = this.getTileHeightAt(x, y);
+    console.log(tileZ);
 
     if (throne instanceof FurnitureAsset) {
       if (highestZ) {
@@ -115,9 +118,9 @@ class Room {
           return;
         }
 
-        this.addFurni(throne, worldCoords.x, worldCoords.y, parseInt(highestZ.z) + parseInt(highestZ.getDimensions().z), throne.rotations[0]);
+        this.addFurni(throne, x, y, z + parseInt(highestZ.z) + parseInt(highestZ.getDimensions().z), throne.rotations[0]);
       } else {
-        this.addFurni(throne, worldCoords.x, worldCoords.y, 0, throne.rotations[0]);
+        this.addFurni(throne, x, y, z, throne.rotations[0]);
       }
     }
   }
@@ -240,10 +243,11 @@ class Room {
         const tileLeft = this.createStairSprite(getFloorMatrix(baseXRight + 32 - STAIR_HEIGHT, baseYRight + STAIR_HEIGHT * 1.5), 0x999966, texture);
 
         tileLeft.width = 8;
-        tileLeft.height = 32;
+        tileLeft.height = 28;
 
-        tileLeft.x -= 32 + 16;
-        tileLeft.y -= 40;
+        tileLeft.x -= 32 + 16 + 4;
+        tileLeft.y -= 40 - 2;
+        container.zIndex = height;
         container.addChild(tileLeft);
     }
 
@@ -533,6 +537,8 @@ class Room {
   }
 
   private async addTileBorder(x: number, y: number, z: number) {
+    const tileBorderContainer = new Container();
+
     // X and Y to isometric coords
     const coords = IsoMath.worldToScreenCoord(x, y, z);
 
@@ -574,8 +580,12 @@ class Room {
     borderRight.x = coords.x + this.cameraX;
     borderRight.y = coords.y + this.cameraY;
 
-    this.container.addChild(borderLeft);
-    this.container.addChild(borderRight);
+    tileBorderContainer.addChild(borderLeft);
+    tileBorderContainer.addChild(borderRight);
+
+    tileBorderContainer.zIndex = z;
+
+    this.container.addChild(tileBorderContainer);
   }
 
   private async addTile(x: number, y: number, z: number) {
@@ -596,6 +606,13 @@ class Room {
     // Finally, set the coords of the tile + the camera offset
     sprite.x = screenXCoord + this.cameraX;
     sprite.y = screenYCoord + this.cameraY;
+
+    sprite.zIndex = z;
+
+    sprite.interactive = true;
+    sprite.on('mousedown', (event) => {
+      this.clicked(x, y, z);
+    })
 
     this.container.addChild(sprite);
   }
@@ -643,6 +660,8 @@ class Room {
 
       // Add offset to sprites
       furni.sprites.forEach((sprite) => {
+        console.log(furni.z)
+        sprite.zIndex = furni.z + 1;
         sprite.x += this.cameraX;
         sprite.y += this.cameraY;
       });
