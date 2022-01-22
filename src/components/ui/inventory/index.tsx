@@ -2,11 +2,13 @@ import CloseButton from '../shared/close/CloseButton';
 import Furniture from './furniture';
 import './inventory.css';
 
-const Inventory = () => {
-  return <div className="container">
+const Inventory = ({ setDisplay, display }: { setDisplay: (display: boolean) => void, display: boolean }) => {
+
+
+  return <div className="container" style={{display: display ? "block" : "none"}}>
     <div className="header">
       <span className="title">Inventory</span>
-      <CloseButton />
+      <CloseButton onClick={() => { setDisplay(false) }} />
     </div>
 
     <div className="tabs">
