@@ -10,11 +10,11 @@ class IsoMath {
   static TILE_DEPTH = 8;
 
   // Calculate the screen coordinates of a given world position
-  static worldToScreenCoord(x: number, y: number) {
+  static worldToScreenCoord(x: number, y: number, z: number) {
     const screenXCoord = (x - y) * this.TILE_WIDTH;
     const screenYCoord = (x + y) * this.TILE_HEIGHT / 2;
 
-    return { x: screenXCoord, y: screenYCoord };
+    return { x: screenXCoord, y: screenYCoord - z * this.TILE_HEIGHT };
   }
   
   // Calculate the world coordinates of a given screen position

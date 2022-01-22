@@ -3,19 +3,19 @@ import GameState from "../state/Game";
 import IsoMath from "./util/Math";
 
 export default class Wall {
-  public async initialize(container: Container, width: number, height: number): Promise<TilingSprite[]> {
+  public async initialize(container: Container, startX: number, startY: number, height: number, width: number): Promise<TilingSprite[]> {
     const wallSprites: TilingSprite[] = [];
 
     // Loop through width & height
-    for (let x = 0; x < width; x++) {
-      for (let y = 0; y < height; y++) {
-        if (x === 0 ) {
+    for (let x = startX; x < width; x++) {
+      for (let y = startY; y < height; y++) {
+        if (x === startX ) {
           const leftWall = await this.LeftWall(x, y);
           wallSprites.push(leftWall)
           container.addChild(leftWall);
         }
     
-        if(y === 0) {
+        if(y === startY) {
           const rightWall = await this.RightWall(x, y);
           wallSprites.push(rightWall)
           container.addChild(rightWall);
@@ -48,7 +48,7 @@ export default class Wall {
     const leftTopBorder = new TilingSprite(Texture.WHITE, IsoMath.WALL_DEPTH, height * IsoMath.TILE_HEIGHT);
 
     // Convert X and Y to isometric coords
-    const coords = IsoMath.worldToScreenCoord(0 - 1, 0);
+    const coords = IsoMath.worldToScreenCoord(0 - 1, 0, 0);
 
     leftTopBorder.transform.setFromMatrix((new Matrix(1, 0.5, 1, -0.5)));
     leftTopBorder.anchor.x = 1;
@@ -58,13 +58,14 @@ export default class Wall {
     leftTopBorder.tint = 0x808080;
 
     // TEXTURE, WIDTH, HEIGHT
+    // Also a shit ton of math upcoming
     const rightTopBorder = new TilingSprite(Texture.WHITE, width * IsoMath.TILE_HEIGHT + IsoMath.WALL_DEPTH, IsoMath.WALL_DEPTH);
 
     rightTopBorder.transform.setFromMatrix((new Matrix(1, 0.5, 1, -0.5)));
     rightTopBorder.anchor.x = 1;
     rightTopBorder.anchor.y = 1;
-    rightTopBorder.y = coords.y - IsoMath.WALL_HEIGHT + (height * IsoMath.TILE_HEIGHT) / 2 - IsoMath.WALL_DEPTH / 2;
-    rightTopBorder.x = coords.x + (height * IsoMath.TILE_HEIGHT) + IsoMath.WALL_DEPTH;
+    rightTopBorder.y = coords.y - IsoMath.WALL_HEIGHT + (width * IsoMath.TILE_HEIGHT) / 2 - IsoMath.WALL_DEPTH / 2;
+    rightTopBorder.x = coords.x + (width * IsoMath.TILE_HEIGHT) + IsoMath.WALL_DEPTH;
     rightTopBorder.tint = 0x808080;
 
     return [leftTopBorder, rightTopBorder];
@@ -82,7 +83,7 @@ export default class Wall {
     sprite.tint = 0xA0A0A0;
     
     // Convert X and Y to isometric coords
-    const coords = IsoMath.worldToScreenCoord(x, y);
+    const coords = IsoMath.worldToScreenCoord(x, y, 0);
     sprite.x = coords.x - 64;
     sprite.y = coords.y;
 
@@ -94,7 +95,7 @@ export default class Wall {
     const sprite = new TilingSprite(Texture.WHITE, IsoMath.WALL_DEPTH, IsoMath.WALL_HEIGHT + IsoMath.TILE_DEPTH);
 
     // Convert X and Y to isometric coords
-    const coords = IsoMath.worldToScreenCoord(x - 1, y + 1);
+    const coords = IsoMath.worldToScreenCoord(x - 1, y + 1, 0);
 
     sprite.transform.setFromMatrix(new Matrix(-1, -0.5, 0, 1));
     sprite.anchor.x = 0;
@@ -111,7 +112,7 @@ export default class Wall {
     const sprite = new TilingSprite(Texture.WHITE, IsoMath.WALL_DEPTH, IsoMath.WALL_HEIGHT + IsoMath.TILE_DEPTH);
 
     // Convert X and Y to isometric coords
-    const coords = IsoMath.worldToScreenCoord(x, y);
+    const coords = IsoMath.worldToScreenCoord(x, y, 0);
 
     sprite.transform.setFromMatrix(new Matrix(-1, 0.5, 0, 1));
     sprite.anchor.x = 1;
@@ -135,7 +136,7 @@ export default class Wall {
     sprite.tint = 0xC8C8C8;
     
     // Convert X and Y to isometric coords
-    const coords = IsoMath.worldToScreenCoord(x, y);
+    const coords = IsoMath.worldToScreenCoord(x, y, 0);
     sprite.x = coords.x;
     sprite.y = coords.y;
 

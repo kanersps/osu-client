@@ -50,11 +50,11 @@ class AssetManager {
 
   static async getFloor(name: string): Promise<Texture> {
     if(!this.isRoomContentLoaded) {
-      await this.loadDefaultRoomContent();
+      await this.loadDefaultRoomContent();      
+      this.isRoomContentLoaded = true;
     }
 
     if(this.floorTextures[name]) {
-      this.isRoomContentLoaded = true;
       return this.floorTextures[name];
     }
 

@@ -23,21 +23,12 @@ class Furniture {
 
     const rotationId = this.asset.rotations.findIndex(r => r === this.rotation);
     
-    console.log("ROTATION: " + this.rotation);
-    console.log("Assets: ");
-    console.log(this.asset.rotations);
     if (this.asset.possibleDirections[rotationId] !== 0) {
       if(this.asset.possibleDirections[rotationId] === 90 && !this.asset.assets[this.rotation][0].flipH) {
         dimensions.x = this.asset.dimensions.y;
         dimensions.y = this.asset.dimensions.x;
       }
-    } else {
-      if(this.asset.assets[this.rotation][0].flipH) {
-        console.log("Flip the H!")
-      }
     }
-
-    console.log(dimensions)
 
     return dimensions;
   }
