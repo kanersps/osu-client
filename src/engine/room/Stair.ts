@@ -6,6 +6,9 @@ export type addTiles = { x: number; y: number; height: number; stairs: number };
 
 const STAIR_HEIGHT = 8;
 
+// The math for the stairs is a bit weird.
+// There are a bunch of "magic" numbers, maybe in the future we should look for a way to improve it.
+// But for now it works
 class Stair {
   public container: Container = new Container();
 
@@ -113,7 +116,7 @@ class Stair {
         tileLeft.width = 8;
         tileLeft.height = 32;
 
-        tileLeft.x -= 32 + 16;
+        tileLeft.x -= 48;
         tileLeft.y -= 40;
         this.container.zIndex = height;
         this.container.addChild(tileLeft);
@@ -145,15 +148,13 @@ class Stair {
     tile.width = STAIR_HEIGHT;
     tile.height = 32;
     tile.x -= 24;
-    tile.y -= 32 + 4;
-
-    tile.y += 8
+    tile.y -= 28;
 
     const borderLeft = this.createStairSprite(getLeftMatrix(baseX + 32 - STAIR_HEIGHT, baseY + STAIR_HEIGHT * 1.5, { width: STAIR_HEIGHT, height: STAIR_HEIGHT}), 0x838357, texture);
     borderLeft.width = STAIR_HEIGHT;
     borderLeft.height = STAIR_HEIGHT;
     
-    borderLeft.x -= 64 + 8;
+    borderLeft.x -= 72;
     borderLeft.y -= 12;
 
     const borderRight = this.createStairSprite(getRightMatrix(baseX, baseY, { width: 32, height: STAIR_HEIGHT }), 0x666644, texture);
