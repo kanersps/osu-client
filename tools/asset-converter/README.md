@@ -5,3 +5,4 @@
 
 3. Run "npm install"
 
+4. Run "node convert.js"
