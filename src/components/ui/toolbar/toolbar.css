@@ -1,6 +1,6 @@
 .toolbar {
   width: 100vw;
-  background: #2e2e2cf0;
+  background: #1c1b1aec;
   bottom: 0px;
   position: absolute;
   height: 50px;
@@ -74,5 +74,5 @@
 }
 
 .navigator-icon {
-  margin: 10px 0px 10px 17px;
+      margin: 10px 0px 10px 17px;
 }
