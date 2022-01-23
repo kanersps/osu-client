@@ -6,6 +6,12 @@ var SWFReader = require('@gizeta/swf-reader');
 const { readFromBufferP, extractImages } = require("swf-extract");
 var archiver = require('archiver');
 
+
+const resourceDirectoriesNames = [
+  "gordon",
+  "furni"
+]
+
 const resourceDirectories = [
   "resource/gordon/PRODUCTION-202201142210-995314542",
   "resource/dcr/hof_furni"
@@ -13,10 +19,12 @@ const resourceDirectories = [
 
 const iconDirectory = "resource/dcr/hof_furni";
 
-const targetDir = "assets2/";
+const targetDir = "assets/";
 
-/*
-const start = async (resourceDir) => {
+const start = async (resourceDir, name) => {
+  // Empty dump directory
+  await fs.rmdir(targetDir + name, {recursive: true});
+
   console.log("Extracting all SWF files from: " + resourceDir);
   const files = await fs.readdir(resourceDir);
 
@@ -25,6 +33,7 @@ const start = async (resourceDir) => {
     const swfPath = path.join(resourceDir, file);
 
     if(file.endsWith(".swf")) {
+      console.log("Dumping SWF: " + file);
       const rawData = await fs.readFile(path.join(resourceDir, file));
       const swfObject = SWFReader.readSync(swfPath);
       const swf = await readFromBufferP(rawData);
@@ -47,8 +56,11 @@ const start = async (resourceDir) => {
   const directories = await fs.readdir("./dump");
 
   for(var directory of directories) {
-    console.log(targetDir + directory + '.zip')
-    var output = file_system.createWriteStream(targetDir + directory + '.zip');
+    console.log("Converting to .zip: " + targetDir + name + "/" + directory + '.zip');
+
+    await fs.mkdir(targetDir + name, {recursive: true});
+
+    var output = file_system.createWriteStream(targetDir + name + "/" + directory + '.zip');
     var archive = archiver('zip');
 
     archive.pipe(output);
@@ -103,9 +115,7 @@ const extractSwfImages = async (swf, assetMap, folderName, baseName) => {
   const images = await Promise.all(extractImages(swf.tags));
   const imagePaths = [];
 
-  console.log(images)
   for (const image of images) {
-    console.log(image.characterId)
     const assets = assetMap[image.characterId] ?? [];
 
     for (const rawName of assets) {
@@ -121,22 +131,37 @@ const extractSwfImages = async (swf, assetMap, folderName, baseName) => {
   return imagePaths;
 }
 
-for(var resourceDir of resourceDirectories) {
-  start(resourceDir);
-}
-*/
-
 // Finally do the icon extraction
-const files = await fs.readdir(iconDirectory);
+const doIcons = async () => {
+  const files = await fs.readdir(iconDirectory);
 
-const targetLocation = targetDir + "furni_icons"
+  const targetLocation = targetDir + "furni_icons"
 
-for(var file of files) {
-  if(file.endsWith(".png")) {
-    // Move icon to target location
-    const sourcePath = path.join(iconDirectory, file);
-    const targetPath = path.join(targetLocation, file);
+  await fs.mkdir(targetLocation, {recursive: true});
 
-    await fs.copyFile(sourcePath, targetPath);
+  for(var file of files) {
+    if(file.endsWith(".png")) {
+      // Move icon to target location
+      const sourcePath = path.join(iconDirectory, file);
+      const targetPath = path.join(targetLocation, file);
+
+      await fs.copyFile(sourcePath, targetPath);
+    }
   }
 }
+
+
+const startAll = async() => {
+  
+let cur = 0;
+for(var resourceDir of resourceDirectories) {
+  await fs.mkdir(targetDir + resourceDirectoriesNames[cur], {recursive: true});
+
+  await start(resourceDir, resourceDirectoriesNames[cur]);
+  cur++;
+}
+
+await doIcons();
+}
+
+startAll();
