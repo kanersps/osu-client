@@ -114,7 +114,7 @@ class Room {
           return;
         }
 
-        this.addFurni(throne, x, y, z + parseInt(highestZ.z) + parseInt(highestZ.getDimensions().z), throne.rotations[0]);
+        this.addFurni(throne, x, y, parseInt(highestZ.z) + parseInt(highestZ.getDimensions().z), throne.rotations[0]);
       } else {
         this.addFurni(throne, x, y, z, throne.rotations[0]);
       }
