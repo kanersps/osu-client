@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { useRecoilState } from "recoil";
 import RenderEngine from "../../../../engine";
-import GameState from "../../../../engine/state/Game";
+import { gameState } from "../../../../engine/state/Game";
 import "./furniture.css";
 
 interface UIFurniture {
@@ -38,6 +39,7 @@ const FilledFurniture = (props: FilledFurnitureType) => {
   const [activeFurni, setActiveFurni] = useState("");
   const [activeFurniName, setActiveFurniName] = useState("");
   const furniPreviewRef = useRef<HTMLDivElement>(null);
+  const [GameState, setGameState] = useRecoilState(gameState);
 
   useEffect(() => {
     // Initialize a new renderer for the preview
@@ -69,7 +71,6 @@ const FilledFurniture = (props: FilledFurnitureType) => {
                 if(activeFurni == furni.name) {
                   setActiveFurni("");
                 } else {
-                  GameState.PlacingFurniName = furni.name;
                   renderer?.drawSingleFurni(furni.name);
                   setActiveFurni(furni.name);
                   setActiveFurniName(furni.pretty_name)
@@ -101,7 +102,9 @@ const FilledFurniture = (props: FilledFurnitureType) => {
           <div ref={furniPreviewRef} className="furni_preview" />
           <div className="furni_info">
             <p className="furni_name">{ activeFurniName }</p>
-            <div className="furni_active_btn">Place in room</div>
+            <div onClick={() => {
+              setGameState({ ...GameState, inventoryOpen: false, placingFurniName: activeFurni });
+            }} className="furni_active_btn">Place in room</div>
             <div className="furni_active_btn">Sell in marketplace</div>
           </div>
         </div>

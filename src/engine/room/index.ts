@@ -1,7 +1,6 @@
-import { Container, Texture, TilingSprite } from "pixi.js";
+import { Container, Sprite, Texture, TilingSprite } from "pixi.js";
 import AssetManager from "../assets/AssetManager";
 import FurnitureAsset from "../assets/FurnitureAsset";
-import GameState from "../state/Game";
 import { getFloorMatrix, getLeftMatrix, getRightMatrix } from "./util/Matrix";
 import IsoMath from "./util/Math";
 import Wall from "./Wall";
@@ -17,6 +16,8 @@ class Room {
   public cameraX: number = 0;
   public cameraY: number = 0;
   private layout: number[][] = [];
+  private placingFurniName: string = "";
+  private ghostFurni: Container | undefined = undefined;
 
   constructor(layout: number[][], client: boolean, drawWalls: boolean) {
     this.container.sortableChildren = true;
@@ -24,6 +25,92 @@ class Room {
     this.layout = layout;
 
     this.loadRoom(drawWalls);
+  }
+
+  public setPlacingFurniName = (name: string) => {
+    this.placingFurniName = name;
+  }
+
+  public async setGhostFurni(name: string) {
+    if (this.ghostFurni) {
+      this.container.removeChild(this.ghostFurni);
+    }
+
+    this.ghostFurni = new Container();
+    this.container.addChild(this.ghostFurni);
+    
+    const furni = await AssetManager.getFurni(name);
+
+    if(furni instanceof FurnitureAsset) {
+      let sprites = furni.drawInWorld(this.ghostFurni, furni.rotations[0], 0, 0, 3);
+
+      sprites.forEach(sprite => {
+        sprite.x += this.cameraX;
+        sprite.y += this.cameraY;
+      })
+    }
+
+    this.ghostFurni.alpha = 0.5;
+    this.ghostFurni.zIndex = 500;
+  }
+
+  public async updateGhostFurniSimple(x: number, y: number, z: number) {
+    if(this.placingFurniName === "") {
+      return;
+    }
+
+    // Get furni at x and y
+    const existingFurni = this.getAllFurniAtXAndY(x, y);
+
+    let highestZ: any = false;
+    if(existingFurni.length > 0) {
+      highestZ = existingFurni.reduce((prev: Furniture, curr: Furniture) => {
+        return prev.z > curr.z ? prev : curr;
+      });
+    }
+
+    if(highestZ) {
+      this.updateGhostFurni(x, y, parseInt(highestZ.z) + parseInt(highestZ.getDimensions().z));
+    } else {
+      this.updateGhostFurni(x, y, z);
+    }
+  }
+
+  private async updateGhostFurni(x: number, y: number, z: number) {
+    if(this.placingFurniName === "") {
+      return;
+    }
+
+    // Remove
+    if(x === -1) {
+      if (this.ghostFurni) {
+        this.container.removeChild(this.ghostFurni);
+      }
+
+      return;
+    }
+
+    if (this.ghostFurni) {
+      this.container.removeChild(this.ghostFurni);
+    }
+
+    this.ghostFurni = new Container();
+
+    // Get original iso coords from GhostFurniX and Y in GameState
+    const furni = await AssetManager.getFurni(this.placingFurniName);
+
+    if(furni instanceof FurnitureAsset) {
+      let sprites = furni.drawInWorld(this.ghostFurni, furni.rotations[0], x, y, z);
+
+      sprites.forEach(sprite => {
+        sprite.x += this.cameraX;
+        sprite.y += this.cameraY;
+      })
+    }
+
+    this.container.addChild(this.ghostFurni);
+    this.ghostFurni.zIndex = z;
+    this.ghostFurni.alpha = 0.5;
   }
 
   public setCamera(x: number, y: number) {
@@ -70,9 +157,6 @@ class Room {
       // Check if the furni is in range of the x and y (using the furni's asset dimension)
       const dimensions = furni.getDimensions();
 
-      console.log(`ClickX: ${x}; ClickY: ${y}`);
-      console.log(`FurniX: ${furni.x}; FurniY: ${furni.y}; SizeX: ${dimensions.x}; SizeY: ${dimensions.y}`);
-
       if (x >= furni.x && y >= furni.y && x <= furni.x + (dimensions.x - 1) && y <= furni.y + (dimensions.y - 1)) {
         furnis.push(furni);
       }
@@ -82,9 +166,7 @@ class Room {
   }
 
   private getTileHeightAt(x: number, y: number) {
-    console.log(`X: ${x}; Y: ${y}`);
-    console.log("LAYOUT: " + this.layout[x][y]);
-    if (this.layout[x] != undefined && this.layout[x][y] != undefined) {
+    if (this.layout[x] !== undefined && this.layout[x][y] !== undefined) {
       return this.layout[x][y];
     }
 
@@ -103,9 +185,7 @@ class Room {
       });
     }
 
-    const throne = await AssetManager.getFurni(GameState.PlacingFurniName);
-    const tileZ = this.getTileHeightAt(x, y);
-    console.log(tileZ);
+    const throne = await AssetManager.getFurni(this.placingFurniName);
 
     if (throne instanceof FurnitureAsset) {
       if (highestZ) {
@@ -145,15 +225,8 @@ class Room {
       return b.height - a.height;
     });
 
-    console.log(tilesToAdd);
-
     for (var tile of tilesToAdd) {
-      if (tile.x === 14 && tile.y === 8) {
-        console.log(tile);
-      }
-
       if (tile.stairs > 0) {
-        console.log(tile.x, tile.y);
         await this.addStairs(tile.x, tile.y, tile.height, tile.stairs);
       } else {
         await this.addTile(tile.x, tile.y, tile.height);
@@ -293,8 +366,15 @@ class Room {
     sprite.zIndex = z;
 
     sprite.interactive = true;
-    sprite.on("mousedown", (event) => {
-      this.clicked(x, y, z);
+    sprite.on("mousedown", async (event) => {
+      await this.clicked(x, y, z);
+      await this.updateGhostFurniSimple(x, y, z);
+    });
+    sprite.on("mouseover", (event) => {
+      this.updateGhostFurniSimple(x, y, z);
+    });
+    sprite.on("mouseout", (event) => {
+      this.updateGhostFurni(-1, 0, 0);
     });
 
     this.container.addChild(sprite);

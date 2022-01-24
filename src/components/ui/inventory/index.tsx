@@ -1,14 +1,16 @@
+import { useRecoilState } from 'recoil';
+import { gameState } from '../../../engine/state/Game';
 import CloseButton from '../shared/close/CloseButton';
 import Furniture from './furniture';
 import './inventory.css';
 
 const Inventory = ({ setDisplay, display }: { setDisplay: (display: boolean) => void, display: boolean }) => {
+  const [GameState, setGameState] = useRecoilState(gameState);
 
-
-  return <div className="container" style={{display: display ? "block" : "none"}}>
+  return <div className="container" style={{display: GameState.inventoryOpen ? "block" : "none"}}>
     <div className="header">
       <span className="title">Inventory</span>
-      <CloseButton onClick={() => { setDisplay(false) }} />
+      <CloseButton onClick={() => { setGameState({...GameState, inventoryOpen: false }) }} />
     </div>
 
     <div className="tabs">

@@ -9,6 +9,8 @@ class RenderEngine {
   _app: PixiApplication;
   cameraX: number = 300;
   cameraY: number = 250;
+  mouseOverTiles: boolean = false;
+  activeRoom: Room | undefined = undefined;
 
   constructor(x?: number, y?: number) {
     if(x && y) {
@@ -34,12 +36,11 @@ class RenderEngine {
     this._app.stop();
   }
 
-  async setRoom(room: Room) {        
-    // Set room as state
-    GameState.CurrentRoom = room;
-    
+  async setRoom(room: Room) {    
     // Add room to render engine
     this._app.stage.addChild(room.container);
+
+    this.activeRoom = room;
   }
 
   async drawSingleFurni(furni: string) {
@@ -53,7 +54,7 @@ class RenderEngine {
 
     room.setCamera(120, 80);
 
-    AssetManager.getFurni(GameState.PlacingFurniName).then(async furni => {
+    AssetManager.getFurni(furni).then(async furni => {
       if(furni instanceof FurnitureAsset) {
         if(furni.hasRotation(2)) {
           await room.addFurni(furni, 1, 1, 0, 2);
@@ -115,6 +116,20 @@ const room = new Room([
     this.setRoom(room);
     
     room.setCamera(this.cameraX, this.cameraY);
+
+    room.container.interactive = true;
+
+    room.container.on("mouseout", () => {
+      this.mouseOverTiles = false;
+    })
+
+    room.container.on("mouseover", () => {
+      this.mouseOverTiles = true;
+    })
+  }
+
+  getCurrentRoom() {
+    return this.activeRoom;
   }
 }
 

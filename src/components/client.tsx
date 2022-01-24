@@ -1,19 +1,58 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
 import RenderEngine from "../engine";
+import { furniPlacingName, gameState } from "../engine/state/Game";
 import UI from "./ui";
 
 const Client = () => {
   let clientRef = useRef<HTMLDivElement>(null);
+  let [mouseInRoom, setMouseInRoom] = useState(false);
+  let [GameState, setGameState] = useRecoilState(gameState);
+
+  let renderer = useRef<RenderEngine | null>(null);
+  const ghostFurni = useRecoilValue(furniPlacingName)
 
   // Only initialize the renderer once for this component
   useEffect(() => {
-    const renderer = new RenderEngine();
+    renderer.current = new RenderEngine();
 
-    renderer.initialize();
+    renderer.current.initialize();
+
+    renderer.current.getCurrentRoom()?.setGhostFurni("throne");
 
     // Add it to the DOM
-    clientRef.current?.appendChild(renderer.view);
+    clientRef.current?.appendChild(renderer.current.view);
   }, [])
+
+  useEffect(() => {
+    if(renderer.current?.activeRoom) {
+      renderer.current.activeRoom.container.interactive = true;
+
+      renderer.current.activeRoom.container.on("mouseout", () => {
+        setMouseInRoom(false);
+      })
+
+      renderer.current.activeRoom.container.on("mouseover", () => {
+        setMouseInRoom(true);
+      })
+    }
+
+    const mouseDownEvent = () => {
+      if(!mouseInRoom && GameState.placingFurniName !== "") {
+        setGameState({ ...GameState, placingFurniName: "", inventoryOpen: true });
+      }
+    }
+
+    window.addEventListener("mousedown", mouseDownEvent)
+
+    return () => {
+      window.removeEventListener("mousedown", mouseDownEvent);
+    }
+  }, [GameState, mouseInRoom, setGameState])
+
+  useEffect(() => {
+    renderer.current?.getCurrentRoom()?.setPlacingFurniName(ghostFurni);
+  }, [ghostFurni])
 
   return <div>
     <div ref={clientRef}></div>
