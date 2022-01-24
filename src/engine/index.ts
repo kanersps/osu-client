@@ -45,7 +45,7 @@ class RenderEngine {
   async drawSingleFurni(furni: string) {
     while(this._app.stage.children.length > 0) { this._app.stage.removeChildAt(0); }
 
-    const room = new Room([], false, false);
+    const room = new Room([[0, 0, 0, 0], [0, 0, 0], [0, 0, 0], [0]], false, false);
 
     // Add room to render engine
     this._app.stage.addChild(room.container);
