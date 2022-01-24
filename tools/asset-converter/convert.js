@@ -23,7 +23,7 @@ const targetDir = "assets/";
 
 const start = async (resourceDir, name) => {
   // Empty dump directory
-  await fs.rmdir(targetDir + name, {recursive: true});
+  await fs.rm("./dump", {recursive: true});
 
   console.log("Extracting all SWF files from: " + resourceDir);
   const files = await fs.readdir(resourceDir);
