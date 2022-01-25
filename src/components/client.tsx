@@ -47,10 +47,22 @@ const Client = () => {
       console.log(coords);
     };
 
+    const mouseMoveEvent = (event: MouseEvent) => {
+      let coords = renderer.current?.activeRoom?.getTileFromXAndY(event.x, event.y);
+
+      const room = renderer.current?.activeRoom;
+
+      if (room && coords) {
+        room.updateGhostFurniSimple(coords.x, coords.y, coords.z);
+      }
+    };
+
     window.addEventListener("mousedown", mouseDownEvent);
+    window.addEventListener("mousemove", mouseMoveEvent);
 
     return function () {
       window.removeEventListener("mousedown", mouseDownEvent);
+      window.removeEventListener("mousemove", mouseMoveEvent);
     };
   }, [GameState, mouseInRoom, setGameState]);
 

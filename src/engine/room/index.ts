@@ -15,6 +15,7 @@ interface TileCoords {
   y: number;
   worldX: number;
   worldY: number;
+  worldZ: number;
   bounds: Rectangle;
 }
 
@@ -25,7 +26,7 @@ class Room {
   public cameraY: number = 0;
   private _renderer: Renderer | AbstractRenderer;
   private _layout: number[][] = [];
-  private placingFurniName: string = "";
+  private placingFurniName: string = "throne";
   private ghostFurni: Container | undefined = undefined;
   private _tileCoords: TileCoords[] = [];
 
@@ -47,7 +48,7 @@ class Room {
     const originalMouseY = mouseY;
 
     // Loop through all tiles and get the tile at x and y from screencoords including height
-    let returnVal = { x: -1, y: -1 };
+    let returnVal = { x: -1, y: -1, z: -1 };
     this._tileCoords.some((tileCoords) => {
       const centerX = tileCoords.x - 32;
       const centerY = tileCoords.y;
@@ -60,7 +61,7 @@ class Room {
       const inside = Math.abs(mouseX) * radii.y + Math.abs(mouseY) * radii.x <= radii.x * radii.y;
 
       if (inside) {
-        returnVal = { x: tileCoords.worldX, y: tileCoords.worldY };
+        returnVal = { x: tileCoords.worldX, y: tileCoords.worldY, z: tileCoords.worldZ };
         return true;
       }
 
@@ -291,6 +292,9 @@ class Room {
     });
 
     const s = new Sprite(renderTexture);
+
+    s.interactive = true;
+
     this.container.addChild(s);
   }
 
@@ -428,21 +432,10 @@ class Room {
       x: sprite.x,
       y: sprite.y,
       bounds: sprite.getBounds(),
+      worldZ: z,
     });
 
     sprite.zIndex = z;
-
-    sprite.interactive = true;
-    sprite.on("mousedown", async (event) => {
-      await this.clicked(x, y, z);
-      await this.updateGhostFurniSimple(x, y, z);
-    });
-    sprite.on("mouseover", (event) => {
-      this.updateGhostFurniSimple(x, y, z);
-    });
-    sprite.on("mouseout", (event) => {
-      this.updateGhostFurni(-1, 0, 0);
-    });
 
     container.addChild(sprite);
   }
