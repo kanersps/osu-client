@@ -1,4 +1,4 @@
-import { Container, Sprite, Texture, TilingSprite } from "pixi.js";
+import { AbstractRenderer, BaseRenderTexture, Container, Renderer, RenderTexture, SCALE_MODES, Sprite, Texture, TilingSprite } from "pixi.js";
 import AssetManager from "../assets/AssetManager";
 import FurnitureAsset from "../assets/FurnitureAsset";
 import { getFloorMatrix, getLeftMatrix, getRightMatrix } from "./util/Matrix";
@@ -15,12 +15,14 @@ class Room {
   public furniture: Furniture[] = [];
   public cameraX: number = 0;
   public cameraY: number = 0;
+  private _renderer: Renderer | AbstractRenderer;
   private layout: number[][] = [];
   private placingFurniName: string = "";
   private ghostFurni: Container | undefined = undefined;
 
-  constructor(layout: number[][], client: boolean, drawWalls: boolean) {
+  constructor(layout: number[][], client: boolean, drawWalls: boolean, renderer: Renderer | AbstractRenderer) {
     this.container.sortableChildren = true;
+    this._renderer = renderer;
 
     this.layout = layout;
 
@@ -29,7 +31,7 @@ class Room {
 
   public setPlacingFurniName = (name: string) => {
     this.placingFurniName = name;
-  }
+  };
 
   public async setGhostFurni(name: string) {
     if (this.ghostFurni) {
@@ -38,16 +40,16 @@ class Room {
 
     this.ghostFurni = new Container();
     this.container.addChild(this.ghostFurni);
-    
+
     const furni = await AssetManager.getFurni(name);
 
-    if(furni instanceof FurnitureAsset) {
+    if (furni instanceof FurnitureAsset) {
       let sprites = furni.drawInWorld(this.ghostFurni, furni.rotations[0], 0, 0, 3);
 
-      sprites.forEach(sprite => {
+      sprites.forEach((sprite) => {
         sprite.x += this.cameraX;
         sprite.y += this.cameraY;
-      })
+      });
     }
 
     this.ghostFurni.alpha = 0.5;
@@ -55,7 +57,7 @@ class Room {
   }
 
   public async updateGhostFurniSimple(x: number, y: number, z: number) {
-    if(this.placingFurniName === "") {
+    if (this.placingFurniName === "") {
       return;
     }
 
@@ -63,13 +65,13 @@ class Room {
     const existingFurni = this.getAllFurniAtXAndY(x, y);
 
     let highestZ: any = false;
-    if(existingFurni.length > 0) {
+    if (existingFurni.length > 0) {
       highestZ = existingFurni.reduce((prev: Furniture, curr: Furniture) => {
         return prev.z > curr.z ? prev : curr;
       });
     }
 
-    if(highestZ) {
+    if (highestZ) {
       this.updateGhostFurni(x, y, parseInt(highestZ.z) + parseInt(highestZ.getDimensions().z));
     } else {
       this.updateGhostFurni(x, y, z);
@@ -77,12 +79,12 @@ class Room {
   }
 
   private async updateGhostFurni(x: number, y: number, z: number) {
-    if(this.placingFurniName === "") {
+    if (this.placingFurniName === "") {
       return;
     }
 
     // Remove
-    if(x === -1) {
+    if (x === -1) {
       if (this.ghostFurni) {
         this.container.removeChild(this.ghostFurni);
       }
@@ -99,13 +101,13 @@ class Room {
     // Get original iso coords from GhostFurniX and Y in GameState
     const furni = await AssetManager.getFurni(this.placingFurniName);
 
-    if(furni instanceof FurnitureAsset) {
+    if (furni instanceof FurnitureAsset) {
       let sprites = furni.drawInWorld(this.ghostFurni, furni.rotations[0], x, y, z);
 
-      sprites.forEach(sprite => {
+      sprites.forEach((sprite) => {
         sprite.x += this.cameraX;
         sprite.y += this.cameraY;
-      })
+      });
     }
 
     this.container.addChild(this.ghostFurni);
@@ -225,17 +227,33 @@ class Room {
       return b.height - a.height;
     });
 
+    const tileContainer = new Container();
+
     for (var tile of tilesToAdd) {
       if (tile.stairs > 0) {
-        await this.addStairs(tile.x, tile.y, tile.height, tile.stairs);
+        await this.addStairs(tileContainer, tile.x, tile.y, tile.height, tile.stairs);
       } else {
-        await this.addTile(tile.x, tile.y, tile.height);
-        await this.addTileBorder(tile.x, tile.y, tile.height);
+        await this.addTile(tileContainer, tile.x, tile.y, tile.height);
+        await this.addTileBorder(tileContainer, tile.x, tile.y, tile.height);
       }
     }
+
+    const renderTexture = new RenderTexture(
+      new BaseRenderTexture({
+        width: tileContainer.width,
+        height: tileContainer.height,
+      })
+    );
+
+    this._renderer.render(tileContainer, {
+      renderTexture,
+    });
+
+    const s = new Sprite(renderTexture);
+    this.container.addChild(s);
   }
 
-  private async addStairs(x: number, y: number, height: number, stair: number) {
+  private async addStairs(container: Container, x: number, y: number, height: number, stair: number) {
     if (stair > -1) {
       let stairs = new Stair(stair, height);
       let coords = IsoMath.worldToScreenCoord(x, y, height);
@@ -243,7 +261,7 @@ class Room {
       stairs.container.x = coords.x + this.cameraX;
       stairs.container.y = coords.y + this.cameraY;
 
-      this.container.addChild(stairs.container);
+      container.addChild(stairs.container);
     }
   }
 
@@ -292,7 +310,7 @@ class Room {
     });
   }
 
-  private async addTileBorder(x: number, y: number, z: number) {
+  private async addTileBorder(container: Container, x: number, y: number, z: number) {
     const tileBorderContainer = new Container();
 
     // X and Y to isometric coords
@@ -341,10 +359,12 @@ class Room {
 
     tileBorderContainer.zIndex = z - 1;
 
-    this.container.addChild(tileBorderContainer);
+    container.addChild(tileBorderContainer);
   }
 
-  private async addTile(x: number, y: number, z: number) {
+  private async addTile(container: Container, x: number, y: number, z: number) {
+    console.log("Adding tile!");
+
     // X and Y to isometric coords
     const screenXCoord = (x - y) * TILE_WIDTH;
     const screenYCoord = ((x + y) * TILE_HEIGHT) / 2 - z * TILE_HEIGHT;
@@ -377,7 +397,7 @@ class Room {
       this.updateGhostFurni(-1, 0, 0);
     });
 
-    this.container.addChild(sprite);
+    container.addChild(sprite);
   }
 
   public async addFurni(furni: FurnitureAsset, x: number, y: number, z: number, rotation: number) {
