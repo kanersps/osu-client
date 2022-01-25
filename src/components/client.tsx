@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import RenderEngine from "../engine";
 import { furniPlacingName, gameState } from "../engine/state/Game";
@@ -10,7 +10,7 @@ const Client = () => {
   let [GameState, setGameState] = useRecoilState(gameState);
 
   let renderer = useRef<RenderEngine | null>(null);
-  const ghostFurni = useRecoilValue(furniPlacingName)
+  const ghostFurni = useRecoilValue(furniPlacingName);
 
   // Only initialize the renderer once for this component
   useEffect(() => {
@@ -22,42 +22,48 @@ const Client = () => {
 
     // Add it to the DOM
     clientRef.current?.appendChild(renderer.current.view);
-  }, [])
+  }, []);
 
   useEffect(() => {
-    if(renderer.current?.activeRoom) {
+    if (renderer.current?.activeRoom) {
       renderer.current.activeRoom.container.interactive = true;
 
       renderer.current.activeRoom.container.on("mouseout", () => {
         setMouseInRoom(false);
-      })
+      });
 
       renderer.current.activeRoom.container.on("mouseover", () => {
         setMouseInRoom(true);
-      })
+      });
     }
 
-    const mouseDownEvent = () => {
-      if(!mouseInRoom && GameState.placingFurniName !== "") {
+    const mouseDownEvent = (event: MouseEvent) => {
+      if (!mouseInRoom && GameState.placingFurniName !== "") {
         setGameState({ ...GameState, placingFurniName: "", inventoryOpen: true });
       }
-    }
 
-    window.addEventListener("mousedown", mouseDownEvent)
+      let coords = renderer.current?.activeRoom?.getTileFromXAndY(event.x, event.y);
 
-    return () => {
+      console.log(coords);
+    };
+
+    window.addEventListener("mousedown", mouseDownEvent);
+
+    return function () {
       window.removeEventListener("mousedown", mouseDownEvent);
-    }
-  }, [GameState, mouseInRoom, setGameState])
+    };
+  }, [GameState, mouseInRoom, setGameState]);
 
   useEffect(() => {
     renderer.current?.getCurrentRoom()?.setPlacingFurniName(ghostFurni);
-  }, [ghostFurni])
+  }, [ghostFurni]);
 
-  return <div>
-    <div ref={clientRef}></div>
-    <UI />
-  </div>
-}
+  return (
+    <div>
+      <div ref={clientRef}></div>
+      <UI />
+    </div>
+  );
+};
 
 export default Client;

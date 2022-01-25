@@ -1,4 +1,4 @@
-import { AbstractRenderer, BaseRenderTexture, Container, Renderer, RenderTexture, SCALE_MODES, Sprite, Texture, TilingSprite } from "pixi.js";
+import { AbstractRenderer, BaseRenderTexture, Bounds, Container, Rectangle, Renderer, RenderTexture, SCALE_MODES, Sprite, Texture, TilingSprite } from "pixi.js";
 import AssetManager from "../assets/AssetManager";
 import FurnitureAsset from "../assets/FurnitureAsset";
 import { getFloorMatrix, getLeftMatrix, getRightMatrix } from "./util/Matrix";
@@ -10,23 +10,64 @@ import Stair, { addTiles } from "./Stair";
 const TILE_WIDTH = 32;
 const TILE_HEIGHT = 32;
 
+interface TileCoords {
+  x: number;
+  y: number;
+  worldX: number;
+  worldY: number;
+  bounds: Rectangle;
+}
+
 class Room {
   public container: Container = new Container();
   public furniture: Furniture[] = [];
   public cameraX: number = 0;
   public cameraY: number = 0;
   private _renderer: Renderer | AbstractRenderer;
-  private layout: number[][] = [];
+  private _layout: number[][] = [];
   private placingFurniName: string = "";
   private ghostFurni: Container | undefined = undefined;
+  private _tileCoords: TileCoords[] = [];
 
   constructor(layout: number[][], client: boolean, drawWalls: boolean, renderer: Renderer | AbstractRenderer) {
     this.container.sortableChildren = true;
     this._renderer = renderer;
 
-    this.layout = layout;
+    this._layout = layout;
 
     this.loadRoom(drawWalls);
+  }
+
+  get layout(): Readonly<number[][]> {
+    return this._layout;
+  }
+
+  public getTileFromXAndY(mouseX: number, mouseY: number) {
+    const originalMouseX = mouseX;
+    const originalMouseY = mouseY;
+
+    // Loop through all tiles and get the tile at x and y from screencoords including height
+    let returnVal = { x: -1, y: -1 };
+    this._tileCoords.some((tileCoords) => {
+      const centerX = tileCoords.x - 32;
+      const centerY = tileCoords.y;
+
+      mouseX = originalMouseX - centerX;
+      mouseY = originalMouseY - centerY;
+
+      // Check if mouse is in bounds
+      const radii = { x: 32, y: 16 };
+      const inside = Math.abs(mouseX) * radii.y + Math.abs(mouseY) * radii.x <= radii.x * radii.y;
+
+      if (inside) {
+        returnVal = { x: tileCoords.worldX, y: tileCoords.worldY };
+        return true;
+      }
+
+      return false;
+    });
+
+    return returnVal;
   }
 
   public setPlacingFurniName = (name: string) => {
@@ -39,7 +80,7 @@ class Room {
     }
 
     this.ghostFurni = new Container();
-    this.container.addChild(this.ghostFurni);
+    //this.container.addChild(this.ghostFurni);
 
     const furni = await AssetManager.getFurni(name);
 
@@ -168,8 +209,8 @@ class Room {
   }
 
   private getTileHeightAt(x: number, y: number) {
-    if (this.layout[x] !== undefined && this.layout[x][y] !== undefined) {
-      return this.layout[x][y];
+    if (this._layout[x] !== undefined && this._layout[x][y] !== undefined) {
+      return this._layout[x][y];
     }
 
     return -1;
@@ -207,11 +248,11 @@ class Room {
     let tilesToAdd: addTiles[] = [];
 
     var y = 0;
-    for (var row of this.layout) {
+    for (var row of this._layout) {
       var x = 0;
       for (var height of row) {
         if (height > -1) {
-          let stairs = Stair.checkLayout(x, y, height, this.layout, tilesToAdd);
+          let stairs = Stair.checkLayout(x, y, height, this._layout, tilesToAdd);
 
           tilesToAdd.push({ x, y, height, stairs });
         }
@@ -273,14 +314,14 @@ class Room {
     let height = 0;
     let startHeight = 0;
 
-    if (this.layout[0] !== undefined) {
+    if (this._layout[0] !== undefined) {
       height += 1;
-      let firstHeight = this.layout[0][0];
+      let firstHeight = this._layout[0][0];
       startHeight = firstHeight;
 
       let currentIndex = 1;
 
-      while (this.layout[currentIndex] !== undefined && firstHeight === this.layout[currentIndex][0]) {
+      while (this._layout[currentIndex] !== undefined && firstHeight === this._layout[currentIndex][0]) {
         currentIndex++;
         height++;
       }
@@ -289,13 +330,13 @@ class Room {
     // Get width while looping through the layout and the number is the same as the first
     let width = 0;
 
-    if (this.layout[0] !== undefined) {
+    if (this._layout[0] !== undefined) {
       width += 1;
 
-      let firstHeight = this.layout[0][0];
+      let firstHeight = this._layout[0][0];
       let currentIndex = 1;
 
-      while (this.layout[0][currentIndex] !== undefined && this.layout[0][currentIndex] === firstHeight) {
+      while (this._layout[0][currentIndex] !== undefined && this._layout[0][currentIndex] === firstHeight) {
         width += 1;
         currentIndex += 1;
       }
@@ -363,8 +404,6 @@ class Room {
   }
 
   private async addTile(container: Container, x: number, y: number, z: number) {
-    console.log("Adding tile!");
-
     // X and Y to isometric coords
     const screenXCoord = (x - y) * TILE_WIDTH;
     const screenYCoord = ((x + y) * TILE_HEIGHT) / 2 - z * TILE_HEIGHT;
@@ -382,6 +421,14 @@ class Room {
     // Finally, set the coords of the tile + the camera offset
     sprite.x = screenXCoord + this.cameraX;
     sprite.y = screenYCoord + this.cameraY;
+
+    this._tileCoords.push({
+      worldX: x,
+      worldY: y,
+      x: sprite.x,
+      y: sprite.y,
+      bounds: sprite.getBounds(),
+    });
 
     sprite.zIndex = z;
 
