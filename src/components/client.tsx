@@ -37,14 +37,27 @@ const Client = () => {
       });
     }
 
-    const mouseDownEvent = (event: MouseEvent) => {
-      if (!mouseInRoom && GameState.placingFurniName !== "") {
-        setGameState({ ...GameState, placingFurniName: "", inventoryOpen: true });
-      }
-
+    const mouseDownEvent = async (event: MouseEvent) => {
       let coords = renderer.current?.activeRoom?.getTileFromXAndY(event.x, event.y);
 
-      console.log(coords);
+      const room = renderer.current?.activeRoom;
+
+      if (room && coords) {
+        if(coords.x === -1) {
+          if(GameState.placingFurniName !== "") {
+            setGameState({ ...GameState, placingFurniName: "", inventoryOpen: true });
+          }
+
+          room.updateGhostFurniSimple(-1, -1, -1);
+
+          return;
+        }
+
+        if (GameState.placingFurniName !== "") {
+          await room.clicked(coords.x, coords.y, coords.z);
+          room.updateGhostFurniSimple(coords.x, coords.y, coords.z);
+        }
+      }
     };
 
     const mouseMoveEvent = (event: MouseEvent) => {

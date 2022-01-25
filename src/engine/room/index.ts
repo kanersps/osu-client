@@ -217,7 +217,8 @@ class Room {
     return -1;
   }
 
-  private async clicked(x: number, y: number, z: number) {
+  // Demo feature, should not be used when going to client <-> server model
+  public async clicked(x: number, y: number, z: number) {
     // Get world coords from click
     const existingFurni = this.getAllFurniAtXAndY(x, y);
 
@@ -483,7 +484,6 @@ class Room {
 
       // Add offset to sprites
       furni.sprites.forEach((sprite) => {
-        console.log(furni.z);
         sprite.zIndex = furni.z + 1;
         sprite.x += this.cameraX;
         sprite.y += this.cameraY;
