@@ -1,0 +1,9 @@
+.context-divider {
+  width: 170px;
+  height: 1px;
+  border-top: 1px solid #333333;
+  margin: 1px 10px;
+  margin-top: 10px;
+  margin-bottom: 5px;
+  float: left;
+}

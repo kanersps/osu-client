@@ -43,16 +43,21 @@ class RenderEngine {
     this.activeRoom = room;
   }
 
-  async drawSingleFurni(furni: string) {
+  async drawSingleFurni(furni: string, withFloor: boolean, backgroundColor: number) {
     while (this._app.stage.children.length > 0) {
       this._app.stage.removeChildAt(0);
     }
 
-    const room = new Room([[0, 0, 0, 0], [0, 0, 0], [0, 0, 0], [0]], false, false, this._app.renderer);
+    const room = new Room(withFloor ? [
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0],
+    ] : [], false, false, this._app.renderer);
 
     // Add room to render engine
     this._app.stage.addChild(room.container);
-    this._app.renderer.backgroundColor = 0xe9e9e1;
+    this._app.renderer.backgroundColor = backgroundColor;
 
     room.setCamera(120, 80);
 

@@ -284,7 +284,7 @@ class Room {
     const renderTexture = new RenderTexture(
       new BaseRenderTexture({
         width: tileContainer.width,
-        height: tileContainer.height,
+        height: tileContainer.height + (tileContainer.height / 2),
       })
     );
 

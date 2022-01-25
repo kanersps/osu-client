@@ -1,0 +1,91 @@
+.furni-context-container {
+  background-color: #3d3d3d;
+  width: 190px;
+  border-radius: 5px;
+  padding-bottom: 10px;
+}
+
+.furni-context-all-container {
+  bottom: 60px;
+  right: 10px;
+  position: fixed;
+}
+
+.furni-context-header-text {
+  font-size: 11px;
+  float: left;
+  font-family: 'Ubuntu';
+  padding: 6px 0px 0px 10px;
+  width: 155px;
+  cursor: pointer;
+  float: left;
+}
+
+.furni-context-header-close {
+  background-image: url("../close.png");
+  width: 13px;
+  height: 13px;
+  margin-right: 8px;
+  margin-top: 7px;
+  float: right;
+  cursor: pointer;
+}
+
+.furni-context-owner {
+  margin-left: 10px;
+}
+
+.furni-owner-context-container {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+}
+
+.furni-context-owner-text {
+    font-size: 11px;
+    float: left;
+    font-family: 'Ubuntu';
+    padding-left: 10px;
+    cursor: pointer;
+}
+
+.furni-context-button {
+  background-color: #3d3d3d;
+  width: auto;
+  height: 25px;
+  border: 1px solid #fff;
+  border-radius: 4px;
+  padding-bottom: 10px;
+  z-index: 100;
+  position: relative;
+  float: right;
+  margin-top: 10px;
+  box-sizing: border-box;
+  cursor: pointer;
+  margin-left: 7px;
+  margin: 6px 0px 6px 6px;
+}
+
+.furni-context-button:hover {
+  box-shadow: inset 0px 0px 0px 1px #fff;
+}
+
+.furni-context-button-text {
+  font-size: 11px;
+  float: left;
+  font-family: Ubuntu;
+  padding: 3px 7px;
+  cursor: pointer;
+}
+
+.furni-context-container-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+/* Center canvas */
+.furni-context-preview canvas {
+  margin: auto;
+  display: block;
+}

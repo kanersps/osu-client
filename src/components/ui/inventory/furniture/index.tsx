@@ -71,7 +71,7 @@ const FilledFurniture = (props: FilledFurnitureType) => {
                 if(activeFurni == furni.name) {
                   setActiveFurni("");
                 } else {
-                  renderer?.drawSingleFurni(furni.name);
+                  renderer?.drawSingleFurni(furni.name, true, 0xe9e9e1);
                   setActiveFurni(furni.name);
                   setActiveFurniName(furni.pretty_name)
                 }
