@@ -123,7 +123,7 @@ class Room {
     const furni = await AssetManager.getFurni(name);
 
     if (furni instanceof FurnitureAsset) {
-      let sprites = furni.drawInWorld(this.ghostFurni, furni.rotations[0], 0, 0, 3);
+      let sprites = furni.drawInWorld(this.ghostFurni, furni.rotations[0], furni.states[0], 0, 0, 3);
 
       sprites.forEach((sprite) => {
         sprite.x += this.cameraX;
@@ -181,7 +181,7 @@ class Room {
     const furni = await AssetManager.getFurni(this.placingFurniName);
 
     if (furni instanceof FurnitureAsset) {
-      let sprites = furni.drawInWorld(this.ghostFurni, furni.rotations[0], x, y, z);
+      let sprites = furni.drawInWorld(this.ghostFurni, furni.rotations[0], furni.states[0], x, y, z);
 
       sprites.forEach((sprite) => {
         sprite.x += this.cameraX;
@@ -203,7 +203,7 @@ class Room {
     furni.rotations.forEach((rotation) => {
       let i = 0;
       furni.rotations.forEach((rotation) => {
-        furni.drawAt(this.container, rotation, 100 + i * 150 + x, 100 + y);
+        furni.drawAt(this.container, rotation, 0, 100 + i * 150 + x, 100 + y);
         i = i + 1;
       });
     });

@@ -86,19 +86,24 @@ class RenderEngine {
     console.log("Done initializing Osu!");
 
     // Test room
-    /*
-const room = new Room([
-  [1, 1, 1, 1],
-  [1, 1, 1, 1],
-  [1, 1, 1, 1],
-  [1, 1, 1, 1],
-  [0, 0, 0, 0],
-  [0, 0, 0, 0],
-  [0, 0, 0, 0],
-  [0, 0, 0, 0],
-], true, true);
-*/
 
+    const room = new Room(
+      [
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [1, 1, 1, 1],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+      ],
+      true,
+      true,
+      this._app.renderer
+    );
+
+    /*
     const room = new Room(
       [
         [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
@@ -131,7 +136,7 @@ const room = new Room([
       true,
       this._app.renderer
     );
-
+*/
     this.setRoom(room);
 
     room.setCamera(this.cameraX, this.cameraY);

@@ -9,7 +9,7 @@ class Furniture {
   constructor(public id: string, public x: number, public y: number, public z: number, public rotation: number, private asset: FurnitureAsset, public uniqueId: number) {}
 
   public async draw() {
-    this.sprites = this.asset.drawInWorld(this.container, this.rotation, this.x, this.y, this.z);
+    this.sprites = this.asset.drawInWorld(this.container, this.rotation, 0, this.x, this.y, this.z);
   }
 
   public getFirstRotation() {
@@ -32,7 +32,7 @@ class Furniture {
     const rotationId = this.asset.rotations.findIndex((r) => r === this.rotation);
 
     if (this.asset.possibleDirections[rotationId] !== 0) {
-      if (this.asset.possibleDirections[rotationId] === 90 && !this.asset.assets[this.rotation][0].flipH) {
+      if (this.asset.possibleDirections[rotationId] === 90 && !this.asset.assets[this.rotation][0][0].flipH) {
         dimensions.x = this.asset.dimensions.y;
         dimensions.y = this.asset.dimensions.x;
       }
