@@ -1,4 +1,4 @@
-import { Container, Matrix, Texture, TilingSprite } from "pixi.js";
+import { Container, Matrix, Sprite, Texture, TilingSprite } from "pixi.js";
 import AssetManager from "../assets/AssetManager";
 import { getFloorMatrix, getLeftMatrix, getRightMatrix } from "./util/Matrix";
 
@@ -221,71 +221,49 @@ class Stair {
     this.container.addChild(borderLeft);
   }
 
-  public async createStairUpRight(index: number) {
-    let baseXLeft = +STAIR_HEIGHT * index;
-    let baseYLeft = -STAIR_HEIGHT * index * 1.5;
+  public async createStairUpRight(step: number) {
+    const texture = await AssetManager.getFloor("floor_texture_64_0_floor_basic");
 
     this.container.sortableChildren = true;
 
-    const baseXRight = 0;
-    const baseYRight = -STAIR_HEIGHT * index * 1.5;
+    const leftTile = this.createStairSprite(getFloorMatrix(0, 0), 0x999966, texture);
+    leftTile.width = 8;
+    leftTile.height = 8;
 
-    const texture = await AssetManager.getFloor("floor_texture_64_0_floor_basic");
+    leftTile.x += 16 * step + 8;
+    leftTile.y -= 24 + 8 * step + 4;
 
-    if (index === 0) {
-      const tileLeft = this.createStairSprite(getFloorMatrix(baseXRight + 32 - STAIR_HEIGHT, baseYRight + STAIR_HEIGHT * 1.5), 0x999966, texture);
-
-      tileLeft.width = 8;
-      tileLeft.height = 64;
-
-      tileLeft.x -= 32 - 20;
-      tileLeft.y -= 58;
-      this.container.addChild(tileLeft);
-
-      const borderLeftBotom = this.createStairSprite(getLeftMatrix(baseXLeft - 8 * index, baseYLeft - 8 * index * 0.5, { width: 32, height: STAIR_HEIGHT }), 0x838357, texture);
-      borderLeftBotom.width = 32;
-      borderLeftBotom.height = STAIR_HEIGHT;
-
-      borderLeftBotom.x -= 96;
-      borderLeftBotom.y -= 24;
-
-      borderLeftBotom.zIndex = 200;
-      this.container.addChild(borderLeftBotom);
-    }
-
-    const tileRight = this.createStairSprite(getFloorMatrix(baseXLeft, baseYLeft), 0x999966, texture);
-
-    tileRight.width = 32 - 8 * index;
+    const tileRight = this.createStairSprite(getFloorMatrix(0, 0), 0x999966, texture);
+    tileRight.width = 32 - 8 * step;
     tileRight.height = 8;
 
-    tileRight.x -= 24;
-    tileRight.y -= 12;
-    tileRight.y += 8;
-    tileRight.zIndex = 100;
+    tileRight.x += 16 * step;
+    tileRight.y -= 24 + 8 * step;
 
-    const borderLeft = this.createStairSprite(getLeftMatrix(baseXLeft - 8 * index, baseYLeft - 8 * index * 0.5, { width: 32, height: STAIR_HEIGHT }), 0x838357, texture);
-    borderLeft.width = 32 - 8 * index - 8;
-    borderLeft.height = STAIR_HEIGHT;
-    borderLeft.zIndex = 200;
+    const leftBorder = this.createStairSprite(getLeftMatrix(0, 0, { width: 32, height: 8 }), 0x838357, texture);
+    leftBorder.width = 32 - 8 * step;
+    leftBorder.height = 8;
 
-    borderLeft.anchor.set(0);
+    leftBorder.x += 8 * step;
+    leftBorder.y -= 24 + 12 * step;
 
-    borderLeft.x -= 48 + 8 - index * 8;
-    borderLeft.y -= 24 + 4 - (index * 8) / 2;
+    const rightBorder = this.createStairSprite(getRightMatrix(0, 0, { width: 8, height: 8 }), 0x666644, texture);
+    rightBorder.width = 8;
+    rightBorder.height = 8;
 
-    const borderRight = this.createStairSprite(getRightMatrix(baseXRight - STAIR_HEIGHT * index, -STAIR_HEIGHT * index * 1.5, { width: 32, height: STAIR_HEIGHT }), 0x666644, texture);
+    rightBorder.x += 8 * step;
+    rightBorder.y -= 24 + 12 * step;
 
-    borderRight.width = 8;
-    borderRight.height = 8;
+    leftTile.zIndex = 0;
+    tileRight.zIndex = 1;
+    leftBorder.zIndex = 500;
 
-    borderRight.anchor.set(0);
-    borderRight.x -= 88 - index * 8 - index * 8;
-    borderRight.y -= 32;
-    borderRight.y += 28;
-
+    if (step < 3) {
+      this.container.addChild(leftTile);
+    }
     this.container.addChild(tileRight);
-    this.container.addChild(borderRight);
-    this.container.addChild(borderLeft);
+    this.container.addChild(leftBorder);
+    this.container.addChild(rightBorder);
   }
 
   public async createStairUp(index: number) {
