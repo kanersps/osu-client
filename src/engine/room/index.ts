@@ -289,7 +289,7 @@ class Room {
     var y = 0;
     for (var row of this._layout) {
       var x = 0;
-      for (var height of row) {
+      for (let height of row) {
         if (height > -1) {
           let stairs = Stair.checkLayout(x, y, height, this._layout, tilesToAdd);
 
@@ -318,10 +318,13 @@ class Room {
       }
     }
 
+    const height = TILE_HEIGHT * this._layout.length + this.cameraY;
+    const width = TILE_WIDTH * this._layout[0].length + this.cameraX;
+
     const renderTexture = new RenderTexture(
       new BaseRenderTexture({
-        width: tileContainer.width,
-        height: tileContainer.height + tileContainer.height / 2,
+        width,
+        height,
       })
     );
 

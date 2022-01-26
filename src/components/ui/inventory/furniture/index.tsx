@@ -174,6 +174,11 @@ export default function Furniture() {
       pretty_name: "Club Sofa",
       amount: 1,
     },
+    {
+      name: "cubie_nt_shelf_1_b",
+      pretty_name: "Cube",
+      amount: 1,
+    },
   ];
 
   return <div className="furniture_container">{furni.length === 0 ? <EmptyFurniture /> : <FilledFurniture furni={furni} />}</div>;

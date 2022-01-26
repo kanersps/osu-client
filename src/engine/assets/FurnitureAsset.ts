@@ -121,7 +121,6 @@ class FurnitureAsset {
           }
 
           if (!this.assets[rotation][state]) {
-            console.log("NEW STATE: " + state);
             this.assets[rotation][state] = [];
           }
 
