@@ -320,8 +320,9 @@ class Room {
       }
     }
 
+    const allTileWidth = TILE_WIDTH * (this._layout[0] ? this._layout[0] : []).length;
     const height = TILE_HEIGHT * this._layout.length + this.cameraY;
-    const width = TILE_WIDTH * (this._layout[0] ? this._layout[0] : []).length + this.cameraX;
+    const width = allTileWidth + allTileWidth / 2 + this.cameraX;
 
     const renderTexture = new RenderTexture(
       new BaseRenderTexture({
@@ -372,16 +373,12 @@ class Room {
         if (row[x - 1] === undefined && ((this.layout[y - 1] !== undefined && this.layout[y][x] - this.layout[y - 1][x] < 1) || this.layout[y - 1] === undefined)) {
           wall.add(x, y, height, WallSide.LEFT);
         }
+
+        if ((this.layout[y][x - 1] === undefined && this.layout[y - 1] && this.layout[y - 1][x] === undefined) || this.layout[y - 1] === undefined) {
+          wall.add(x, y, height, WallSide.RIGHT);
+        }
       });
     });
-
-    //const sprites = await wall.initialize(walls, 0, 0, width, 0);
-
-    // Add offset to sprites
-    /*sprites.forEach((sprite) => {
-      sprite.x += this.cameraX;
-      sprite.y += this.cameraY - startHeight * IsoMath.TILE_HEIGHT;
-    });*/
 
     wall.container.interactive = true;
 
