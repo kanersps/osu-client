@@ -22,8 +22,8 @@ interface GameState {
 const initialValue: GameState = {
   cameraOffsetX: 400,
   cameraOffsetY: 400,
-  placingFurniName: "club_sofa",
-  GhostFurni: true,
+  placingFurniName: "",
+  GhostFurni: false,
   inventoryOpen: false,
   SelectedFurni: undefined,
 };

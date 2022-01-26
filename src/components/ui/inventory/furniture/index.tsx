@@ -169,6 +169,11 @@ export default function Furniture() {
       pretty_name: "Biohazard Poster",
       amount: 14,
     },
+    {
+      name: "club_sofa",
+      pretty_name: "Club Sofa",
+      amount: 1,
+    },
   ];
 
   return <div className="furniture_container">{furni.length === 0 ? <EmptyFurniture /> : <FilledFurniture furni={furni} />}</div>;
