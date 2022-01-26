@@ -229,6 +229,8 @@ class Room {
 
     // Then load the furniture
     await this.loadFurni();
+
+    this.container.sortChildren();
   }
 
   private getAllFurniAtXAndY(x: number, y: number): Furniture[] {
@@ -313,8 +315,8 @@ class Room {
       if (tile.stairs > 0) {
         await this.addStairs(tileContainer, tile.x, tile.y, tile.height, tile.stairs);
       } else {
-        await this.addTile(tileContainer, tile.x, tile.y, tile.height);
         await this.addTileBorder(tileContainer, tile.x, tile.y, tile.height);
+        await this.addTile(tileContainer, tile.x, tile.y, tile.height);
       }
     }
 
@@ -336,6 +338,8 @@ class Room {
 
     s.interactive = true;
 
+    s.zIndex = 1;
+
     s.on("click", () => {
       // Call floorClickCallbacks
       this.floorClickCallback.forEach((callback) => {
@@ -346,10 +350,10 @@ class Room {
     this.container.addChild(s);
   }
 
-  private async addStairs(container: Container, x: number, y: number, height: number, stair: number) {
+  private async addStairs(container: Container, x: number, y: number, z: number, stair: number) {
     if (stair > -1) {
-      let stairs = new Stair(stair, height);
-      let coords = IsoMath.worldToScreenCoord(x, y, height);
+      let stairs = new Stair(stair);
+      let coords = IsoMath.worldToScreenCoord(x, y, z);
 
       stairs.container.x = coords.x + this.cameraX;
       stairs.container.y = coords.y + this.cameraY;
@@ -362,7 +366,14 @@ class Room {
     //Fill 10 by 10 tiles
     const wall = new Wall(this.cameraX, this.cameraY);
 
-    wall.add(0, 0, WallSide.LEFT);
+    let first = false;
+    this.layout.forEach((row, y) => {
+      row.forEach((height, x) => {
+        if (row[x - 1] === undefined && ((this.layout[y - 1] !== undefined && this.layout[y][x] - this.layout[y - 1][x] < 1) || this.layout[y - 1] === undefined)) {
+          wall.add(x, y, height, WallSide.LEFT);
+        }
+      });
+    });
 
     //const sprites = await wall.initialize(walls, 0, 0, width, 0);
 
@@ -380,6 +391,8 @@ class Room {
         callback();
       });
     });
+
+    wall.container.zIndex = 0;
 
     this.container.addChild(wall.container);
   }
@@ -409,11 +422,14 @@ class Room {
     borderLeft.height = IsoMath.TILE_DEPTH;
     borderLeft.tint = 0x838357;
 
+    borderLeft.anchor.x = 1;
+    borderLeft.anchor.y = 0;
+
     borderLeft.tilePosition.x = coords.x + this.cameraX;
     borderLeft.tilePosition.y = coords.y + this.cameraY;
 
-    borderLeft.x = coords.x + this.cameraX - 32;
-    borderLeft.y = coords.y + this.cameraY + 16;
+    borderLeft.x = coords.x + this.cameraX;
+    borderLeft.y = coords.y + this.cameraY;
 
     const borderRight = new TilingSprite(Texture.WHITE);
 
@@ -422,16 +438,17 @@ class Room {
     borderRight.height = IsoMath.TILE_DEPTH;
     borderRight.tint = 0x666644;
 
+    borderRight.anchor.x = 1;
+    borderRight.anchor.y = 0;
+
     borderRight.tilePosition.x = coords.x + this.cameraX;
     borderRight.tilePosition.y = coords.y + this.cameraY;
 
-    borderRight.x = coords.x + this.cameraX;
-    borderRight.y = coords.y + this.cameraY;
+    borderRight.x = coords.x + this.cameraX + 32;
+    borderRight.y = coords.y + this.cameraY + 16;
 
     tileBorderContainer.addChild(borderLeft);
     tileBorderContainer.addChild(borderRight);
-
-    tileBorderContainer.zIndex = z - 1;
 
     container.addChild(tileBorderContainer);
   }
@@ -444,8 +461,8 @@ class Room {
     // Get default floor texture
     const floorTexture = await AssetManager.getFloor("floor_texture_64_0_floor_basic");
     const sprite = new TilingSprite(floorTexture);
-    sprite.anchor.x = 1;
-    sprite.anchor.y = 1;
+    sprite.anchor.x = 0;
+    sprite.anchor.y = 0;
     sprite.transform.setFromMatrix(getFloorMatrix(0, 0));
     sprite.width = 32;
     sprite.height = 32;
@@ -463,8 +480,6 @@ class Room {
       bounds: sprite.getBounds(),
       worldZ: z,
     });
-
-    sprite.zIndex = z;
 
     container.addChild(sprite);
   }
