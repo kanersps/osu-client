@@ -8,12 +8,10 @@ import UI from "./ui";
 
 const Client = () => {
   let clientRef = useRef<HTMLDivElement>(null);
-  let [mouseInRoom, setMouseInRoom] = useState(false);
   let [GameState, setGameState] = useRecoilState(gameState);
   let renderer = useRef<RenderEngine | null>(null);
   const placingFurniName = useRecoilValue(getPlacingFurniName);
   const selectedFurni = useRecoilValue(getSelectedFurni);
-  const lastRotation = useRef<number>(0);
 
   // Only initialize the renderer once for this component
   useEffect(() => {
@@ -31,7 +29,6 @@ const Client = () => {
     const room = renderer.current?.activeRoom;
 
     const callback = (furni: Furniture) => {
-      console.log(furni.uniqueId);
       setGameState({
         ...GameState,
         SelectedFurni: {
@@ -47,26 +44,29 @@ const Client = () => {
       });
     };
 
+    const removeFurniContextMenu = () => {
+      setGameState({
+        ...GameState,
+        SelectedFurni: undefined,
+      });
+    };
+
     if (room !== undefined) {
       room.addFurniClickCallback(callback);
+      room.addFloorClickCallback(removeFurniContextMenu);
+      room.addWallClickCallback(removeFurniContextMenu);
     }
 
     return () => {
       room?.removeFurniCallback(callback);
+      room?.removeFloorClickCallback(removeFurniContextMenu);
+      room?.removeWallClickCallback(removeFurniContextMenu);
     };
   }, [GameState, setGameState]);
 
   useEffect(() => {
     if (renderer.current?.activeRoom) {
       renderer.current.activeRoom.container.interactive = true;
-
-      renderer.current.activeRoom.container.on("mouseout", () => {
-        setMouseInRoom(false);
-      });
-
-      renderer.current.activeRoom.container.on("mouseover", () => {
-        setMouseInRoom(true);
-      });
     }
 
     const mouseDownEvent = async (event: MouseEvent) => {

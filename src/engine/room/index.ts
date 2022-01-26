@@ -9,6 +9,8 @@ import Stair, { addTiles } from "./Stair";
 import FurniContext from "../../components/ui/room/context/furni";
 
 type FurniClickCallback = (furni: Furniture) => void;
+type WallClickCallback = () => void;
+type FloorClickCallback = () => void;
 
 const TILE_WIDTH = 32;
 const TILE_HEIGHT = 32;
@@ -33,6 +35,8 @@ class Room {
   private ghostFurni: Container | undefined = undefined;
   private _tileCoords: TileCoords[] = [];
   private furniClickCallbacks: FurniClickCallback[] = [];
+  private wallClickCallback: WallClickCallback[] = [];
+  private floorClickCallback: FloorClickCallback[] = [];
 
   constructor(layout: number[][], client: boolean, drawWalls: boolean, renderer: Renderer | AbstractRenderer) {
     this.container.sortableChildren = true;
@@ -45,6 +49,24 @@ class Room {
 
   get layout(): Readonly<number[][]> {
     return this._layout;
+  }
+
+  // Add wall click callback
+  public addWallClickCallback(callback: WallClickCallback) {
+    this.wallClickCallback.push(callback);
+  }
+
+  // Remove wall click callback
+  public removeWallClickCallback(callback: WallClickCallback) {
+    this.wallClickCallback = this.wallClickCallback.filter((c) => c !== callback);
+  }
+
+  public removeFloorClickCallback(callback: FloorClickCallback) {
+    this.floorClickCallback = this.floorClickCallback.filter((c) => c !== callback);
+  }
+
+  public addFloorClickCallback(callback: FloorClickCallback) {
+    this.floorClickCallback.push(callback);
   }
 
   public addFurniClickCallback(callback: FurniClickCallback) {
@@ -311,6 +333,13 @@ class Room {
 
     s.interactive = true;
 
+    s.on("click", () => {
+      // Call floorClickCallbacks
+      this.floorClickCallback.forEach((callback) => {
+        callback();
+      });
+    });
+
     this.container.addChild(s);
   }
 
@@ -327,6 +356,8 @@ class Room {
   }
 
   private async loadWalls() {
+    const walls = new Container();
+
     //Fill 10 by 10 tiles
     const wall = new Wall();
 
@@ -362,13 +393,24 @@ class Room {
       }
     }
 
-    const sprites = await wall.initialize(this.container, 0, 0, height, width);
+    const sprites = await wall.initialize(walls, 0, 0, height, width);
 
     // Add offset to sprites
     sprites.forEach((sprite) => {
       sprite.x += this.cameraX;
       sprite.y += this.cameraY - startHeight * IsoMath.TILE_HEIGHT;
     });
+
+    walls.interactive = true;
+
+    walls.on("click", () => {
+      // Call wallClickCallbacks
+      this.wallClickCallback.forEach((callback) => {
+        callback();
+      });
+    });
+
+    this.container.addChild(walls);
   }
 
   private async addTileBorder(container: Container, x: number, y: number, z: number) {
