@@ -33,7 +33,15 @@ export default function FurniContext() {
   return (
     <div style={{ display: selectedFurni ? "block" : "none" }} className="furni-context-all-container">
       <div className="furni-context-container-container">
-        <div className="furni-context-container">
+        <div
+          onClick={() => {
+            setGameState({
+              ...GameState,
+              SelectedFurni: undefined,
+            });
+          }}
+          className="furni-context-container"
+        >
           <div className="furni-context-header">
             <div className="furni-context-header-text">{selectedFurni?.id}</div>
             <div className="furni-context-header-close" />

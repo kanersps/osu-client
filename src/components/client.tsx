@@ -29,19 +29,21 @@ const Client = () => {
     const room = renderer.current?.activeRoom;
 
     const callback = (furni: Furniture) => {
-      setGameState({
-        ...GameState,
-        SelectedFurni: {
-          id: furni.id,
-          owner: "Kanersps",
-          description: "",
-          name: furni.id,
-          // Temporarily just use their index in the Room, TODO: change to actual furni id when going to server <-> client model
-          uniqueId: furni.uniqueId,
-          // Again temporary, should be a network request instead
-          rotateTo: furni.rotation,
-        },
-      });
+      if (placingFurniName === "") {
+        setGameState({
+          ...GameState,
+          SelectedFurni: {
+            id: furni.id,
+            owner: "Kanersps",
+            description: "",
+            name: furni.id,
+            // Temporarily just use their index in the Room, TODO: change to actual furni id when going to server <-> client model
+            uniqueId: furni.uniqueId,
+            // Again temporary, should be a network request instead
+            rotateTo: furni.rotation,
+          },
+        });
+      }
     };
 
     const removeFurniContextMenu = () => {
@@ -62,7 +64,7 @@ const Client = () => {
       room?.removeFloorClickCallback(removeFurniContextMenu);
       room?.removeWallClickCallback(removeFurniContextMenu);
     };
-  }, [GameState, setGameState]);
+  }, [GameState, setGameState, placingFurniName]);
 
   useEffect(() => {
     if (renderer.current?.activeRoom) {
