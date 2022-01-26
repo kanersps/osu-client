@@ -501,7 +501,6 @@ class Room {
 
       // Add offset to sprites
       furni.sprites.forEach((sprite) => {
-        sprite.zIndex = furni.z + 1;
         sprite.x += this.cameraX;
         sprite.y += this.cameraY;
       });
@@ -509,6 +508,8 @@ class Room {
       if (!this.container.children.includes(furni.container)) {
         this.container.addChild(furni.container);
       }
+
+      furni.container.zIndex = furni.y + furni.x + furni.z + 1;
 
       furni.container.interactive = true;
       furni.container.on("pointerdown", (event) => {

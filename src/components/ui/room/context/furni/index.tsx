@@ -31,7 +31,7 @@ export default function FurniContext() {
   }, [selectedFurni]);
 
   return (
-    <div className="furni-context-all-container">
+    <div style={{ display: selectedFurni ? "block" : "none" }} className="furni-context-all-container">
       <div className="furni-context-container-container">
         <div className="furni-context-container">
           <div className="furni-context-header">
