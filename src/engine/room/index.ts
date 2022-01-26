@@ -3,7 +3,7 @@ import AssetManager from "../assets/AssetManager";
 import FurnitureAsset from "../assets/FurnitureAsset";
 import { getFloorMatrix, getLeftMatrix, getRightMatrix } from "./util/Matrix";
 import IsoMath from "./util/Math";
-import Wall from "./Wall";
+import Wall, { WallSide } from "./Wall";
 import Furniture from "../models/Furniture";
 import Stair, { addTiles } from "./Stair";
 import FurniContext from "../../components/ui/room/context/furni";
@@ -319,7 +319,7 @@ class Room {
     }
 
     const height = TILE_HEIGHT * this._layout.length + this.cameraY;
-    const width = TILE_WIDTH * this._layout[0].length + this.cameraX;
+    const width = TILE_WIDTH * (this._layout[0] ? this._layout[0] : []).length + this.cameraX;
 
     const renderTexture = new RenderTexture(
       new BaseRenderTexture({
@@ -359,61 +359,29 @@ class Room {
   }
 
   private async loadWalls() {
-    const walls = new Container();
-
     //Fill 10 by 10 tiles
-    const wall = new Wall();
+    const wall = new Wall(this.cameraX, this.cameraY);
 
-    // Get height while looping through the layout and the number is the same as the first
-    let height = 0;
-    let startHeight = 0;
+    wall.add(0, 0, WallSide.LEFT);
 
-    if (this._layout[0] !== undefined) {
-      height += 1;
-      let firstHeight = this._layout[0][0];
-      startHeight = firstHeight;
-
-      let currentIndex = 1;
-
-      while (this._layout[currentIndex] !== undefined && firstHeight === this._layout[currentIndex][0]) {
-        currentIndex++;
-        height++;
-      }
-    }
-
-    // Get width while looping through the layout and the number is the same as the first
-    let width = 0;
-
-    if (this._layout[0] !== undefined) {
-      width += 1;
-
-      let firstHeight = this._layout[0][0];
-      let currentIndex = 1;
-
-      while (this._layout[0][currentIndex] !== undefined && this._layout[0][currentIndex] === firstHeight) {
-        width += 1;
-        currentIndex += 1;
-      }
-    }
-
-    const sprites = await wall.initialize(walls, 0, 0, height, width);
+    //const sprites = await wall.initialize(walls, 0, 0, width, 0);
 
     // Add offset to sprites
-    sprites.forEach((sprite) => {
+    /*sprites.forEach((sprite) => {
       sprite.x += this.cameraX;
       sprite.y += this.cameraY - startHeight * IsoMath.TILE_HEIGHT;
-    });
+    });*/
 
-    walls.interactive = true;
+    wall.container.interactive = true;
 
-    walls.on("click", () => {
+    wall.container.on("click", () => {
       // Call wallClickCallbacks
       this.wallClickCallback.forEach((callback) => {
         callback();
       });
     });
 
-    this.container.addChild(walls);
+    this.container.addChild(wall.container);
   }
 
   private async addTileBorder(container: Container, x: number, y: number, z: number) {
