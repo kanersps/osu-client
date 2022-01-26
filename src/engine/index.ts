@@ -43,17 +43,24 @@ class RenderEngine {
     this.activeRoom = room;
   }
 
-  async drawSingleFurni(furni: string, withFloor: boolean, backgroundColor: number) {
+  async drawSingleFurni(furni_id: string, withFloor: boolean, backgroundColor: number) {
     while (this._app.stage.children.length > 0) {
       this._app.stage.removeChildAt(0);
     }
 
-    const room = new Room(withFloor ? [
-      [0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0],
-    ] : [], false, false, this._app.renderer);
+    const room = new Room(
+      withFloor
+        ? [
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0],
+          ]
+        : [],
+      false,
+      false,
+      this._app.renderer
+    );
 
     // Add room to render engine
     this._app.stage.addChild(room.container);
@@ -61,12 +68,12 @@ class RenderEngine {
 
     room.setCamera(120, 80);
 
-    AssetManager.getFurni(furni).then(async (furni) => {
+    AssetManager.getFurni(furni_id).then(async (furni) => {
       if (furni instanceof FurnitureAsset) {
         if (furni.hasRotation(2)) {
-          await room.addFurni(furni, 1, 1, 0, 2);
+          await room.addFurni(furni_id, furni, 1, 1, 0, 2);
         } else {
-          await room.addFurni(furni, 1, 1, 0, 0);
+          await room.addFurni(furni_id, furni, 1, 1, 0, 0);
         }
       }
     });

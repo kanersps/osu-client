@@ -68,12 +68,12 @@ const FilledFurniture = (props: FilledFurnitureType) => {
           return (
             <div
               onClick={() => {
-                if(activeFurni == furni.name) {
+                if (activeFurni == furni.name) {
                   setActiveFurni("");
                 } else {
                   renderer?.drawSingleFurni(furni.name, true, 0xe9e9e1);
                   setActiveFurni(furni.name);
-                  setActiveFurniName(furni.pretty_name)
+                  setActiveFurniName(furni.pretty_name);
                 }
               }}
               key={furni.name}
@@ -97,17 +97,22 @@ const FilledFurniture = (props: FilledFurnitureType) => {
         })}
       </div>
 
-      <div style={{opacity: activeFurni === "" ? 0 : 1}} className="furni_selected">
-          {/* TODO: Add "tradable" count, PS: this preview was really fun to make */}
-          <div ref={furniPreviewRef} className="furni_preview" />
-          <div className="furni_info">
-            <p className="furni_name">{ activeFurniName }</p>
-            <div onClick={() => {
+      <div style={{ opacity: activeFurni === "" ? 0 : 1 }} className="furni_selected">
+        {/* TODO: Add "tradable" count, PS: this preview was really fun to make */}
+        <div ref={furniPreviewRef} className="furni_preview" />
+        <div className="furni_info">
+          <p className="furni_name">{activeFurniName}</p>
+          <div
+            onClick={() => {
               setGameState({ ...GameState, inventoryOpen: false, placingFurniName: activeFurni });
-            }} className="furni_active_btn">Place in room</div>
-            <div className="furni_active_btn">Sell in marketplace</div>
+            }}
+            className="furni_active_btn"
+          >
+            Place in room
           </div>
+          <div className="furni_active_btn">Sell in marketplace</div>
         </div>
+      </div>
     </div>
   );
 };
@@ -158,7 +163,12 @@ export default function Furniture() {
       name: "ads_teletubbies_noonoo",
       pretty_name: "Noo Noo",
       amount: 1,
-    }
+    },
+    {
+      name: "hween08_bio",
+      pretty_name: "Biohazard Poster",
+      amount: 14,
+    },
   ];
 
   return <div className="furniture_container">{furni.length === 0 ? <EmptyFurniture /> : <FilledFurniture furni={furni} />}</div>;

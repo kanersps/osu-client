@@ -6,6 +6,9 @@ import IsoMath from "./util/Math";
 import Wall from "./Wall";
 import Furniture from "../models/Furniture";
 import Stair, { addTiles } from "./Stair";
+import FurniContext from "../../components/ui/room/context/furni";
+
+type FurniClickCallback = (furni: Furniture) => void;
 
 const TILE_WIDTH = 32;
 const TILE_HEIGHT = 32;
@@ -29,6 +32,7 @@ class Room {
   private placingFurniName: string = "throne";
   private ghostFurni: Container | undefined = undefined;
   private _tileCoords: TileCoords[] = [];
+  private furniClickCallbacks: FurniClickCallback[] = [];
 
   constructor(layout: number[][], client: boolean, drawWalls: boolean, renderer: Renderer | AbstractRenderer) {
     this.container.sortableChildren = true;
@@ -41,6 +45,17 @@ class Room {
 
   get layout(): Readonly<number[][]> {
     return this._layout;
+  }
+
+  public addFurniClickCallback(callback: FurniClickCallback) {
+    this.furniClickCallbacks.push(callback);
+  }
+
+  public removeFurniCallback(callback: FurniClickCallback) {
+    const index = this.furniClickCallbacks.indexOf(callback);
+    if (index > -1) {
+      this.furniClickCallbacks.splice(index, 1);
+    }
   }
 
   public getTileFromXAndY(mouseX: number, mouseY: number) {
@@ -239,9 +254,9 @@ class Room {
           return;
         }
 
-        this.addFurni(throne, x, y, parseInt(highestZ.z) + parseInt(highestZ.getDimensions().z), throne.rotations[0]);
+        this.addFurni(this.placingFurniName, throne, x, y, parseInt(highestZ.z) + parseInt(highestZ.getDimensions().z), throne.rotations[0]);
       } else {
-        this.addFurni(throne, x, y, z, throne.rotations[0]);
+        this.addFurni(this.placingFurniName, throne, x, y, z, throne.rotations[0]);
       }
     }
   }
@@ -284,7 +299,7 @@ class Room {
     const renderTexture = new RenderTexture(
       new BaseRenderTexture({
         width: tileContainer.width,
-        height: tileContainer.height + (tileContainer.height / 2),
+        height: tileContainer.height + tileContainer.height / 2,
       })
     );
 
@@ -441,18 +456,20 @@ class Room {
     container.addChild(sprite);
   }
 
-  public async addFurni(furni: FurnitureAsset, x: number, y: number, z: number, rotation: number) {
-    this.furniture.push(new Furniture(x, y, z, rotation, furni));
+  public getFurniFromId(id: number) {
+    return this.furniture.find((furni) => furni.uniqueId === id);
+  }
+
+  public async addFurni(id: string, furni: FurnitureAsset, x: number, y: number, z: number, rotation: number) {
+    this.furniture.push(new Furniture(id, x, y, z, rotation, furni, Math.floor(Math.random() * 100000)));
     this.redrawFurni();
   }
 
   public async redrawFurni() {
     // Loop through all furni and their sprites
     this.furniture.forEach((furni) => {
-      furni.sprites.forEach((sprite) => {
-        // Remove the sprite from the container
-        this.container.removeChild(sprite);
-      });
+      // Remove all children from the furni container
+      furni.container.removeChildren();
     });
 
     // Sort all furni, first by x, then by y and then by z
@@ -480,13 +497,24 @@ class Room {
 
     // Now draw all furni
     this.furniture.forEach((furni) => {
-      furni.draw(this.container);
+      furni.draw();
 
       // Add offset to sprites
       furni.sprites.forEach((sprite) => {
         sprite.zIndex = furni.z + 1;
         sprite.x += this.cameraX;
         sprite.y += this.cameraY;
+      });
+
+      if (!this.container.children.includes(furni.container)) {
+        this.container.addChild(furni.container);
+      }
+
+      furni.container.interactive = true;
+      furni.container.on("pointerdown", (event) => {
+        this.furniClickCallbacks.forEach((cb) => {
+          cb(furni);
+        });
       });
     });
   }

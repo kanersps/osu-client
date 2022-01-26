@@ -1,33 +1,36 @@
 import { atom, selector } from "recoil";
+import Furniture from "../models/Furniture";
 
 class SelectedFurni {
+  id: string = "throne";
   name: string = "Throne";
   description: string = "Important Habbos only";
   owner: string = "Kanersps";
+  uniqueId: number = -1;
+  rotateTo: number = 0;
 }
 
-class GameState {
-  public cameraOffsetX: number = 400;
-  public cameraOffsetY: number = 400;
-  public placingFurniName: string = "throne";
-  public GhostFurni: boolean = true;
-  public inventoryOpen: boolean = false;
-  public SelectedFurni: SelectedFurni = new SelectedFurni();
+interface GameState {
+  cameraOffsetX: number;
+  cameraOffsetY: number;
+  placingFurniName: string;
+  GhostFurni: boolean;
+  inventoryOpen: boolean;
+  SelectedFurni: SelectedFurni | undefined;
 }
+
+const initialValue: GameState = {
+  cameraOffsetX: 400,
+  cameraOffsetY: 400,
+  placingFurniName: "club_sofa",
+  GhostFurni: true,
+  inventoryOpen: false,
+  SelectedFurni: undefined,
+};
 
 export const gameState = atom({
   key: "gameState",
-  default: new GameState(),
-});
-
-export const inventoryOpen = selector({
-  key: "inventoryOpen",
-  get: ({ get }) => get(gameState).inventoryOpen,
-});
-
-export const furniPlacingName = selector({
-  key: "inventoryOpen",
-  get: ({ get }) => get(gameState).placingFurniName,
+  default: initialValue,
 });
 
 export default GameState;
