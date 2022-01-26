@@ -310,6 +310,7 @@ class Room {
     });
 
     const tileContainer = new Container();
+    tileContainer.sortableChildren = true;
 
     for (var tile of tilesToAdd) {
       if (tile.stairs > 0) {
@@ -358,6 +359,8 @@ class Room {
 
       stairs.container.x = coords.x + this.cameraX;
       stairs.container.y = coords.y + this.cameraY;
+
+      stairs.container.zIndex = x + y + z;
 
       container.addChild(stairs.container);
     }
@@ -447,6 +450,8 @@ class Room {
     tileBorderContainer.addChild(borderLeft);
     tileBorderContainer.addChild(borderRight);
 
+    tileBorderContainer.zIndex = x + y + z;
+
     container.addChild(tileBorderContainer);
   }
 
@@ -477,6 +482,8 @@ class Room {
       bounds: sprite.getBounds(),
       worldZ: z,
     });
+
+    sprite.zIndex = z + y + x;
 
     container.addChild(sprite);
   }

@@ -109,16 +109,23 @@ class Stair {
 
     const texture = await AssetManager.getFloor("floor_texture_64_0_floor_basic");
 
-    if (index === 0) {
-      const tileLeft = this.createStairSprite(getFloorMatrix(baseXRight + 32 - STAIR_HEIGHT, baseYRight + STAIR_HEIGHT * 1.5), 0x999966, texture);
+    let tileLeft = this.createStairSprite(getFloorMatrix(0, 0), 0x999966, texture);
 
-      tileLeft.width = 8;
-      tileLeft.height = 32;
+    tileLeft.width = 8;
+    tileLeft.height = 24;
+    tileLeft.y -= 24 + 4 * (3 - index) + 4;
+    tileLeft.x += 8 + 8 * (3 - index);
+    tileLeft.zIndex = 10;
+    this.container.addChild(tileLeft);
 
-      tileLeft.x -= 48;
-      tileLeft.y -= 40;
-      this.container.addChild(tileLeft);
-    }
+    let tileRight = this.createStairSprite(getFloorMatrix(0, 0), 0x666644, texture);
+
+    tileRight.width = 8;
+    tileRight.height = 32;
+    tileRight.y -= 24 + 4 * (3 - index) - 4;
+    tileRight.x += 8 + 8 * (3 - index);
+    tileRight.zIndex = 0;
+    this.container.addChild(tileRight);
 
     const borderLeft = this.createStairSprite(getLeftMatrix(baseX + 32 - STAIR_HEIGHT, baseY + STAIR_HEIGHT * 1.5, { width: STAIR_HEIGHT, height: STAIR_HEIGHT }), 0x838357, texture);
     borderLeft.width = STAIR_HEIGHT;
@@ -127,8 +134,11 @@ class Stair {
     borderLeft.x += index * 16;
     borderLeft.y += index * 8;
 
-    borderLeft.x -= 96;
-    borderLeft.y -= 24;
+    borderLeft.x -= 24;
+
+    borderLeft.y += 0 - 36; // - 4
+
+    borderLeft.zIndex = 40;
 
     this.container.addChild(borderLeft);
   }
@@ -142,21 +152,19 @@ class Stair {
     const tile = this.createStairSprite(getFloorMatrix(baseX + 32 - STAIR_HEIGHT, baseY + STAIR_HEIGHT * 1.5), 0x999966, texture);
     tile.width = STAIR_HEIGHT;
     tile.height = 32;
-    tile.x -= 24;
-    tile.y -= 28;
+
+    tile.y += 8 - 32;
 
     const borderLeft = this.createStairSprite(getLeftMatrix(baseX + 32 - STAIR_HEIGHT, baseY + STAIR_HEIGHT * 1.5, { width: STAIR_HEIGHT, height: STAIR_HEIGHT }), 0x838357, texture);
     borderLeft.width = STAIR_HEIGHT;
     borderLeft.height = STAIR_HEIGHT;
 
-    borderLeft.x -= 72;
-    borderLeft.y -= 12;
+    borderLeft.y += 8 - 32;
 
     const borderRight = this.createStairSprite(getRightMatrix(baseX, baseY, { width: 32, height: STAIR_HEIGHT }), 0x666644, texture);
     borderRight.width = 32;
     borderRight.height = STAIR_HEIGHT;
-    borderRight.x -= 96;
-    borderRight.y += 8;
+    borderRight.y += 8 - 32;
 
     this.container.addChild(borderLeft);
     this.container.addChild(borderRight);
